@@ -1,0 +1,168 @@
+.rectangle {
+  width: 45%;
+  height: 660px;
+  background-color: white;
+  margin: 0 auto;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 5%;  
+}
+
+label {
+  margin-bottom: 5px;
+  display: block;
+}
+  
+input {
+  padding: 5px;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.tab-header button {
+  background-color: #c45628;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"] {
+  width: 70%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  border-color: blue;
+}
+
+label {
+  color: #c45628;
+  font-weight: bold;
+}
+
+.input-group {
+  margin-left: 7%;
+  margin-bottom: 1;
+}
+
+button[type="submit"] {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 10px 0;
+}
+
+.tab-header button {
+  background-color: transparent;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  position: relative;
+  margin-top: -3%;
+}
+
+.tab-header button::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #c45628;
+  transition: width 0.5s ease;
+}
+
+.tab-header button.active::before {
+  width: 100%;
+}
+/* Add these styles to your signup.css file */
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.previous-button {
+  background-color: grey;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+}
+
+.next-button {
+  background-color: green;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+}
+
+.next-button:disabled {
+  background-color: #ccc; /* Gray out the button when disabled */
+  cursor: not-allowed;
+}
+
+.submit-button {
+  background-color: #27ae60;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 16px;
+}
+
+.previous-button:hover {
+  background-color: grey;
+}
+
+.next-button:hover {
+  background-color: green;
+}
+
+.submit-button:hover {
+  background-color: #1e8449;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.2); /* Adjust the opacity as needed */
+  backdrop-filter: blur(10px); /* Adjust the blur radius as needed */
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
