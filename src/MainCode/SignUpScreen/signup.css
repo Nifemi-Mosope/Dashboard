@@ -1,12 +1,13 @@
 .rectangle {
-  width: 45%;
-  height: 660px;
-  background-color: white;
-  margin: 0 auto;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  border-radius: 5%;  
+  width: 80%; /* Adjust the width as needed */
+  max-width: 600px; /* Limit the maximum width */
+  margin: 0 auto; /* Center horizontally */
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  position: relative; /* To allow positioning of the tab header */
+  top: 80px; /* Adjust the top margin as needed */
 }
 
 label {
@@ -21,16 +22,17 @@ input {
 .tab-header {
   display: flex;
   justify-content: space-around;
-  margin-top: 20px;
+  margin-bottom: 20px;
+  background-color: #f2f2f2;
 }
 
 .tab-header button {
-  background-color: #c45628;
-  color: #fff;
+  background-color: transparent;
   border: none;
-  padding: 10px 20px;
+  font-size: 13px;
+  padding: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  filter: blur(3px);
 }
 
 input[type="text"],
@@ -98,37 +100,39 @@ button[type="submit"]:hover {
   transition: width 0.5s ease;
 }
 
+.tab-header button.active {
+  filter: none; /* Remove blur for active button */
+  font-weight: bold; /* Highlight active button */
+}
+
 .tab-header button.active::before {
   width: 100%;
 }
 /* Add these styles to your signup.css file */
 
 .button-container {
-  display: flex;
-  justify-content: space-between;
+  text-align: right;
   margin-top: 20px;
 }
 
-.previous-button {
-  background-color: grey;
+.previous-button,
+.next-button,
+.submit-button {
+  background-color: #c45628;
   color: #fff;
-  border: none;
   padding: 10px 20px;
+  border: none;
   border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
   font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  margin-left: 10px;
 }
 
-.next-button {
-  background-color: green;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 16px;
+.previous-button:hover,
+.next-button:hover,
+.submit-button:hover {
+  background-color: #a2441e; /* Darker shade on hover */
 }
 
 .next-button:disabled {
@@ -136,33 +140,93 @@ button[type="submit"]:hover {
   cursor: not-allowed;
 }
 
-.submit-button {
-  background-color: #27ae60;
-  color: #fff;
-  border: none;
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff; /* Add a semi-transparent white background */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px 20px;
-  border-radius: 5px;
+  z-index: 100; /* Ensure it's above other content */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+.title {
+  color: #c45628;
+  font-size: 28px;
+  font-family: cursive;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+}
+
+.sign-in-button {
+  background-color: #c45628;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
   font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
 }
 
-.previous-button:hover {
-  background-color: grey;
+.sign-in-button:hover {
+  background-color: #a2441e; /* Darker shade on hover */
 }
 
-.next-button:hover {
-  background-color: green;
+/* Add custom styles for the role dropdown */
+.role-dropdown {
+  position: relative;
 }
 
-.submit-button:hover {
-  background-color: #1e8449;
+.role-dropdown select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #c45628;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.2); /* Adjust the opacity as needed */
-  backdrop-filter: blur(10px); /* Adjust the blur radius as needed */
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* Style the custom arrow icon */
+.role-dropdown::after {
+  content: '\25BC'; /* Unicode down arrow character */
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #c45628;
+  pointer-events: none; /* Ensure the arrow doesn't interfere with select clicks */
+}
+
+/* Add a subtle hover effect */
+.role-dropdown select:hover {
+  background-color: #e0e0e0;
+}
+
+/* styles for the password toggle button */
+.password-toggle {
+  background-color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-left: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.password-toggle:hover {
+  background-color: #007bff;
+  color: #fff;
 }

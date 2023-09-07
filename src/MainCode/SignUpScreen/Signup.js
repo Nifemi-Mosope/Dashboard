@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './signup.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Outlet, Route } from 'react-router-dom';
 
 function Signup() {
@@ -79,50 +79,11 @@ function Signup() {
     }
   };
 
-  const navigate = useNavigate();
-
-  const handleSignInClick = () => {
-    navigate.push("/signIn");
-  };
-
   return (
-    <div
-      className="glass-morphism"
-      style={{
-        backgroundColor: '#f2f2f2',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          padding: '0 20px',
-        }}
-      >
-        <h1
-          style={{
-            color: '#c45628',
-            fontSize: '48px',
-            fontFamily: 'cursive',
-            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-            margin: '0',
-            marginBottom: '45%',
-            cursor: 'pointer',
-          }}
-        >
-          QuicKee
-        </h1>
-        <button
-          style={{marginBottom: '45%', cursor: 'pointer', height: '5%', width: '5%', borderRadius: '12%'}}
-          onClick={handleSignInClick}>Sign In</button> {/* Moved to the far right */}
+    <div className="glass-morphism">
+      <div className='fixed-header'>
+        <h1 className='title' onClick={() => window.location.reload()}>QuicKee</h1>
+        <Link to="/signIn" className='sign-in-button'>Sign In</Link>
       </div>
       <div className="rectangle">
         <div className="tab-header">
