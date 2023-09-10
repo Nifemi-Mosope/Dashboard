@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './signup.css';
-import { useNavigate, Link } from 'react-router-dom';
-import { Outlet, Route } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function Signup() {
   const [activeTab, setActiveTab] = useState(1);

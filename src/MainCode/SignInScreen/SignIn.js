@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '../SignUpScreen/signup.css';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function SignIn() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -18,8 +18,12 @@ function SignIn() {
     });
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    navigate('/home');
     console.log(formData);
   };
 
@@ -35,7 +39,7 @@ function SignIn() {
       </div>
       <div className="rectangle">
         <div>
-          <h2 style={{ textAlign: 'center', marginTop: '0%' }}>Login</h2>
+          <h2 style={{ textAlign: 'center', marginTop: '0%' }}>Login To Your Account</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <label htmlFor="username">Username</label>
@@ -66,20 +70,6 @@ function SignIn() {
                 >
                   {passwordVisible ? 'Hide' : 'Show'}
                 </button>
-            </div>
-            <div className="input-group">
-              <label htmlFor="role">Role</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Role</option>
-                <option value="Admin">Admin</option>
-                <option value="Staff">Staff</option>
-              </select>
             </div>
             <div className="button-container">
               <button type="submit" className="submit-button">
