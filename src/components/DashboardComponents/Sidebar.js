@@ -3,18 +3,17 @@ import './dash.css'
 import { Menu } from 'antd';
 import {AppstoreOutlined} from '@ant-design/icons'
 import { ChatCircleDots, ClockCounterClockwise, CookingPot, ShoppingCart } from 'phosphor-react';
-import { useNavigate } from 'react-router-dom';
 
-function Sidebar() {
-    const navigate = useNavigate()
+function Sidebar({ setSelectedMenuItem }) {
+    const handleMenuItemClick = (item) => {
+        setSelectedMenuItem(item.key);
+    };
+
     return (
         <div className='Sidebar'>
             <Menu
                 className='custom-menu'
-                onClick={(item) => {
-                    //item.key
-                    navigate(item.key)
-                }}
+                onClick={handleMenuItemClick}
                 items={[
                     {
                         label: 'Dashboard',

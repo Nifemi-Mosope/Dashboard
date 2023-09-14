@@ -3,7 +3,7 @@
     flex-direction: column;
     width: 100vw;
     height: 100vh;
-    background-color: #f2f2f2;
+    background-color: white;
 }
 .Header {
     height: 50px;
@@ -35,5 +35,8 @@
     transition: color 0.3s ease;
 }
 .custom-menu{
-    background-color: #f2f2f2;
+    background-color: white;
+}
+.PageContent{ 
+    padding-left: 12px;
 }

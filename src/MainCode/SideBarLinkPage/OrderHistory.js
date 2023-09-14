@@ -3,7 +3,7 @@ import { Typography } from "antd";
 function History() {
     return(
         <div>
-            <Typography.Text>Order History</Typography.Text>
+            <Typography.Title level={3}>Order History</Typography.Title>
         </div>
     )
 }
