@@ -157,7 +157,6 @@ function RecentOrders() {
         fullName: "John Doe",
         orderID: Math.floor(100000 + Math.random() * 900000), // Generates a random 6-digit number
         title: "Burger",
-        quantity: 2,
         price: 10.99,
       },
       {
@@ -165,7 +164,6 @@ function RecentOrders() {
         fullName: "Alice Smith",
         orderID: Math.floor(100000 + Math.random() * 900000),
         title: "Jollof Rice, Fried Rice, Chicken, Beef, Bottle Water",
-        quantity: 1,
         price: 15.99,
       },
       {
@@ -173,7 +171,6 @@ function RecentOrders() {
         fullName: "Alice Smith",
         orderID: Math.floor(100000 + Math.random() * 900000),
         title: "Jollof Rice, Fried Rice, Chicken, Beef, Bottle Water",
-        quantity: 1,
         price: 15.99,
       },
       {
@@ -181,7 +178,6 @@ function RecentOrders() {
         fullName: "Alice Smith",
         orderID: Math.floor(100000 + Math.random() * 900000),
         title: "Jollof Rice, Fried Rice, Chicken, Beef, Bottle Water",
-        quantity: 1,
         price: 15.99,
       },
     ];
@@ -209,11 +205,6 @@ function RecentOrders() {
       key: "title",
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
       title: "Price",
       dataIndex: "price",
       key: "price",
@@ -229,7 +220,7 @@ function RecentOrders() {
         loading={loading}
         dataSource={dataSource}
         pagination={true}
-        style={{ width: '95%' }}
+        style={{ width: '85%' }}
         scroll={{ y: 150, maxHeight: '70vh' }}
       ></Table>
     </>
@@ -267,11 +258,10 @@ function DashboardChart({ revenueData, loading }) {
     },
   };
 
-  // Define custom styles for the chart container
   const chartContainerStyle = {
     width: '100%',
-    height: '300px', // Adjust the height as needed
-    marginRight: '50px',
+    height: '300px',
+    marginRight: '150px',
     marginBottom: '60px'
   };
 

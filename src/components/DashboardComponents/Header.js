@@ -12,15 +12,17 @@ function Header() {
     return (
         <div className='Header'>
             <Image src={quickeeImage} style={imageStyle}></Image>
-            <Typography.Title>DunnKaycee Restaurant</Typography.Title>
-            <Space size={26}>
-                <Badge style={{cursor: 'pointer'}}>
-                    <MailOutlined style={{fontSize: '20px'}}/>
-                </Badge>
-                <Badge style={{cursor: 'pointer'}}>
-                    <BellFilled style={{fontSize: '20px'}}/>
-                </Badge>
-            </Space>
+            <Typography.Title>QuicKee Restaurant</Typography.Title>
+            <div style={{marginRight: '1%'}}>
+                <Space size={26}>
+                    <Badge style={{cursor: 'pointer'}}>
+                        <MailOutlined style={{fontSize: '20px'}}/>
+                    </Badge>
+                    <Badge style={{cursor: 'pointer'}}>
+                        <BellFilled style={{fontSize: '20px'}}/>
+                    </Badge>
+                </Space>
+            </div>
         </div>
     )
 }
