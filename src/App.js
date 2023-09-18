@@ -1,17 +1,19 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
 import SignIn from './MainCode/SignInScreen/SignIn';
 import Signup from './MainCode/SignUpScreen/Signup';
 import Home from './MainCode/HomeScreen/Home';
 
 function App() {
+  const routes = useRoutes([
+    { path: '/', element: <Signup /> },
+    { path: '/signIn', element: <SignIn /> },
+    { path: '/home', element: <Home /> },
+  ]);
+
   return (
     <div>
-      <Routes>
-        <Route path='/' element={<Signup />} />
-        <Route path='/signIn' element={<SignIn />} />
-        <Route path='/home' element={<Home />} />
-      </Routes>
+      {routes}
     </div>
   );
 }
