@@ -96,4 +96,17 @@
   .review-description {
     word-wrap: break-word;
   }
+
+  .review-date-time {
+    color: #999; /* Light gray color for faint appearance */
+    margin-top: 4px; /* Adjust spacing as needed */
+  }
+
+  .review-avatar {
+    width: 50px; /* Adjust width as needed */
+    height: 50px; /* Adjust height as needed */
+    border-radius: 50%; /* Creates a circular avatar */
+    object-fit: cover; /* Ensures the image covers the entire container */
+    border: 2px solid #ccc; /* Add a border if desired */
+  }
   
