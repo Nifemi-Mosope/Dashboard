@@ -1,222 +1,157 @@
-import React, { useState } from 'react';
-import { Layout, Row, Col, Card, Avatar, Button, Input, Popconfirm, message, Modal } from 'antd';
-import { HeartOutlined, DislikeOutlined, HeartFilled, DislikeFilled, SendOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import moment from 'moment';
-import '../../components/DashboardComponents/dash.css';;
-const { Meta } = Card;
-
-const { Content } = Layout;
-
-const reviews = [
-  {
-    name: 'Oluwanifemi Ojinni',
-    content: 'You guys didnt attend to me very well and i dont like it.',
-    image: 'https://via.placeholder.com/150',
-    likeCount: 30,
-    unLike: 20,
-    date: '30th August 2019',
-  },
-  {
-    name: 'Alice Smith',
-    content: 'I loved the ambiance and the delicious dishes.',
-    image: 'https://via.placeholder.com/150',
-    likeCount: 30,
-    unLike: 20,
-    date: '30th August 2019',
-  },
-  {
-    name: 'Ella Brown',
-    content: 'Amazing restaurant, highly recommended!',
-    image: 'https://via.placeholder.com/150',
-    likeCount: 30,
-    unLike: 20,
-    date: '30th August 2019',
-  },
-  {
-    name: 'Ella Brown',
-    content: 'Amazing restaurant, highly recommended!',
-    image: 'https://via.placeholder.com/150',
-    likeCount: 30,
-    unLike: 20,
-    date: '30th August 2019',
-  },
-  {
-    name: 'Ella Brown',
-    content: 'Amazing restaurant, highly recommended!',
-    image: 'https://via.placeholder.com/150',
-    likeCount: 30,
-    unLike: 20,
-    date: '30th August 2019',
-  },
-];
+import React, { useState } from "react";
+import "./Reviews.css";
+import {
+  HeartOutlined,
+  DislikeOutlined,
+  HeartFilled,
+  DislikeFilled,
+} from "@ant-design/icons";
+import moment from "moment/moment";
 
 function Reviews() {
+  // Sample review data
+  const [reviews, setReviews] = useState([
+    {
+      username: "John Doe",
+      date: "August 30, 2023",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      userImage: "https://via.placeholder.com/150",
+      likeCount: 10,
+      dislikeCount: 30,
+    },
+    {
+      username: "Alice Smith",
+      date: "August 29, 2023",
+      content: "Pellentesque eget magna sit amet purus gravida consectetur.",
+      userImage: "https://via.placeholder.com/150",
+      likeCount: 10,
+      dislikeCount: 30,
+    },
+  ]);
+
   const [likedReviews, setLikedReviews] = useState({});
   const [dislikedReviews, setDislikedReviews] = useState({});
   const [showInput, setShowInput] = useState(false);
   const [newComment, setNewComment] = useState('');
-  const [showEdit, setShowEdit] = useState(null);
 
   const handleLikeClick = (index) => {
+    const updatedReviews = [...reviews];
     if (!likedReviews[index]) {
+      updatedReviews[index].likeCount += 1;
+      updatedReviews[index].dislikeCount -= dislikedReviews[index] ? 1 : 0;
       setLikedReviews({ ...likedReviews, [index]: true });
       setDislikedReviews({ ...dislikedReviews, [index]: false });
-      reviews[index].likeCount += 1;
-      reviews[index].unLike -= dislikedReviews[index] ? 1 : 0;
     } else {
+      updatedReviews[index].likeCount -= 1;
       setLikedReviews({ ...likedReviews, [index]: false });
-      reviews[index].likeCount -= 1;
     }
+    setReviews(updatedReviews);
   };
 
   const handleDislikeClick = (index) => {
+    const updatedReviews = [...reviews];
     if (!dislikedReviews[index]) {
+      updatedReviews[index].dislikeCount += 1;
+      updatedReviews[index].likeCount -= likedReviews[index] ? 1 : 0;
       setDislikedReviews({ ...dislikedReviews, [index]: true });
       setLikedReviews({ ...likedReviews, [index]: false });
-      reviews[index].unLike += 1;
-      reviews[index].likeCount -= likedReviews[index] ? 1 : 0;
     } else {
+      updatedReviews[index].dislikeCount -= 1;
       setDislikedReviews({ ...dislikedReviews, [index]: false });
-      reviews[index].unLike -= 1;
     }
+    setReviews(updatedReviews);
   };
 
-  const handleSaySomethingClick = () => {
+  const handleShowInputClick = () => {
     setShowInput(true);
   };
 
   const handleSendClick = () => {
     const timestamp = moment().format('MMMM Do YYYY, h:mm A');
     const newReviewObj = {
-      name: 'QuicKee Restaurant',
+      username: 'QuicKee Restaurant',
       content: newComment,
-      image: 'https://via.placeholder.com/150',
+      userImage: 'dislikeCount',
       likeCount: 0,
-      unLike: 0,
-      date: timestamp, // Include the timestamp here
+      dislikeCount: 0,
+      date: timestamp,
     };
     reviews.push(newReviewObj);
-  
-    // Reset the review input and hide it
+
     setNewComment('');
     setShowInput(false);
   };
 
-  const handleEditClick = (index) => {
-    setShowEdit(index);
-  };
-  
-  const handleDeleteClick = (index) => {
-    Modal.confirm({
-      title: 'Are you sure you want to delete this review?',
-      icon: <ExclamationCircleOutlined />,
-      content: 'This action cannot be undone.',
-      okText: 'Yes',
-      okType: 'danger',
-      onOk() {
-        // Handle deletion here
-        reviews.splice(index, 1);
-        setShowEdit(null);
-        message.success('Review deleted successfully');
-      },
-      onCancel() {
-        message.info('Review deletion cancelled');
-      },
-    });
-  };
-  
-
   return (
-    <Layout>
-      <Content className="content">
-        <Row gutter={[16, 16]}>
-          {reviews.map((review, index) => (
-            <Col key={index} xs={24} sm={12} lg={8}>
-              <Card className="review-card">
-                <Meta
-                  avatar={<Avatar src={review.image} className="review-avatar" />}
-                  title={
-                    <div className="review-header">
-                      <div>{review.name}</div>
-                      <div className="review-date-time">{review.date}</div>
-                      {/* {index === showEdit && (
-                        <>
-                        <Button
-                          icon={<EditOutlined />}
-                          type="link"
-                          className="edit-button"
-                          onClick={() => handleEditClick(index)}
-                        />
-                        <Popconfirm
-                          title="Are you sure you want to delete this review?"
-                          onConfirm={() => handleDeleteClick(index)}
-                          okText="Yes"
-                          cancelText="No"
-                        >
-                          <Button
-                            icon={<DeleteOutlined />}
-                            type="link"
-                            className="delete-button"
-                          />
-                        </Popconfirm>
-                      </>
-                      )} */}
-                    </div>
-                  }
-                  description={<div className="review-description">{review.content}</div>}
-                />
-                <div className="review-actions">
-                  <div className="action-count">
-                    <span>{review.likeCount}</span>
-                  </div>
-                  <Button
-                    icon={likedReviews[index] ? <HeartFilled style={{ color: '#c45628' }} /> : <HeartOutlined />}
-                    size="large"
-                    shape="circle"
-                    className="like-button"
+    <div className="reviews-container">
+      {reviews.map((review, index) => (
+        <div key={index} className="review">
+          <div className="user-info">
+            <img src={review.userImage} alt={`${review.username}'s avatar`} />
+            <div className="user-details">
+              <span className="username">{review.username}</span>
+              <span className="date">{review.date}</span>
+            </div>
+          </div>
+          <p className="review-content">{review.content}</p>
+          <div className="review-actions">
+            <span className={`like-count ${likedReviews[index] ? 'active' : ''}`}>
+              {likedReviews[index] ? (
+                <>
+                  <HeartFilled
+                    style={{ color: "#c45628" }}
                     onClick={() => handleLikeClick(index)}
                   />
-                  <div className="action-count">
-                    <span>{review.unLike}</span>
-                  </div>
-                  <Button
-                    icon={dislikedReviews[index] ? <DislikeFilled style={{ color: '#c45628' }} /> : <DislikeOutlined />}
-                    size="large"
-                    shape="circle"
-                    className="dislike-button"
+                  <span>{review.likeCount}</span>
+                </>
+              ) : (
+                <>
+                  <HeartOutlined onClick={() => handleLikeClick(index)} />
+                  <span>{review.likeCount}</span>
+                </>
+              )}
+            </span>
+            <span className={`dislike-count ${dislikedReviews[index] ? 'active' : ''}`}>
+              {dislikedReviews[index] ? (
+                <>
+                  <DislikeFilled
+                    style={{ color: "#c45628" }}
                     onClick={() => handleDislikeClick(index)}
                   />
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <Button type="primary" onClick={handleSaySomethingClick}>Say Something</Button>
+                  <span>{review.dislikeCount}</span>
+                </>
+              ) : (
+                <>
+                  <DislikeOutlined onClick={() => handleDislikeClick(index)} />
+                  <span>{review.dislikeCount}</span>
+                </>
+              )}
+            </span>
+          </div>
         </div>
-        {showInput && (
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <Input
+      ))}
+      <div className={`add-comment ${showInput ? 'active' : ''}`}>
+        {showInput ? (
+          <div className="comment-input">
+            <input
+              type="text"
               placeholder="Type your comment here"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              style={{ width: '70%' }}
-              addonAfter={
-                <Button
-                  type="primary"
-                  icon={<SendOutlined />}
-                  onClick={handleSendClick}
-                  disabled={!newComment.trim()}
-                >
-                  Send
-                </Button>
-              }
             />
+            <button className="send-button" onClick={handleSendClick}>
+              Send
+            </button>
           </div>
+        ) : (
+          <button className="add-comment-button" onClick={handleShowInputClick}>
+            Add a Comment
+          </button>
         )}
-      </Content>
-    </Layout>
+      </div>
+    </div>
   );
 }
 
 export default Reviews;
+

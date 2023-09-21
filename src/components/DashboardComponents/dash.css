@@ -46,27 +46,50 @@
     text-align: center;
 }
   
-.content {
-    padding: 50px;
-    background-color: #f0f2f5;
-}
+.Footer {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.15);
+    z-index: 999; /* Ensure it's above other content */
+  }
   
-.review-card {
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
-    padding: 16px;
-}
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px; /* Adjust padding as needed */
+  }
   
-.footer {
-    text-align: center;
-    background-color: #001529;
-    color: #fff;
-    padding: 10px 0;
-}
+  .contact-info {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    margin-right: 950px;
+  }
   
-.footer a {
-    color: #fff;
-}
+  .contact-info a {
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .social-icons {
+    display: flex;
+    gap: 20px;
+  } 
+  
+  .social-icon {
+    text-decoration: none;
+    color: #555;
+    transition: color 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    color: #000;
+  }
+  
 
 .action-count {
     display: inline-block;
@@ -74,39 +97,3 @@
     font-size: 16px;
     color: #555;
 }
-
-.review-actions {
-    display: flex;
-    align-items: center;
-    margin-top: 16px;
-  }
-  
-  .like-button,
-  .dislike-button {
-    margin-right: 16px;
-    font-size: 24px;
-    color: #555;
-  }
-  
-  .like-button:hover,
-  .dislike-button:hover {
-    color: #c45628;
-  }
-
-  .review-description {
-    word-wrap: break-word;
-  }
-
-  .review-date-time {
-    color: #999; /* Light gray color for faint appearance */
-    margin-top: 4px; /* Adjust spacing as needed */
-  }
-
-  .review-avatar {
-    width: 50px; /* Adjust width as needed */
-    height: 50px; /* Adjust height as needed */
-    border-radius: 50%; /* Creates a circular avatar */
-    object-fit: cover; /* Ensures the image covers the entire container */
-    border: 2px solid #ccc; /* Add a border if desired */
-  }
-  
