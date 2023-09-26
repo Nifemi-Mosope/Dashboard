@@ -32,7 +32,7 @@ function Orders() {
     const cardStyle = {
         margin: 20,
         width: '150%',
-        left: '18%',
+        marginLeft: '40%',
         height: '780px',
         boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
         alignItems: 'center',

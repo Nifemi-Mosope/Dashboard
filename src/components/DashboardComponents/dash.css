@@ -6,11 +6,11 @@
     background-color: white;
 }
 .Header {
-    height: 50px;
+    height: 3rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 20px 4px 12px;
+    padding: 0rem 1rem 0.5rem 2rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 .Footer {
@@ -51,34 +51,34 @@
     bottom: 0;
     background-color: white;
     border-top: 1px solid rgba(0, 0, 0, 0.15);
-    z-index: 999; /* Ensure it's above other content */
-  }
+    z-index: 999;
+}
   
-  .footer-content {
+.footer-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px; /* Adjust padding as needed */
-  }
+    padding: 5px 5px; /* Adjust padding as needed */
+}
   
-  .contact-info {
+.contact-info {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    margin-right: 950px;
-  }
+    margin-right: 30rem;
+}
   
-  .contact-info a {
-    margin-bottom: 8px;
+.contact-info a {
+    margin-bottom: 0rem;
     text-decoration: none;
     color: #333;
     font-weight: bold;
-  }
+}
   
-  .social-icons {
+.social-icons {
     display: flex;
-    gap: 20px;
-  } 
+    gap: 1rem;
+} 
   
   .social-icon {
     text-decoration: none;

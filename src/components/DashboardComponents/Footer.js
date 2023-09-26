@@ -13,8 +13,8 @@ function Footer() {
     <div className='Footer'>
       <div className="footer-content">
         <div className="contact-info">
-          <Typography.Link href='tel:+2349134228578'>Contact us: 09134228578</Typography.Link>
-          <Typography.Link href='mailto:nifemiojinni22@gmail.com' style={{marginLeft: '90px'}}>Send an Email</Typography.Link>
+          <Typography.Link href='tel:+2349134228578' style={{fontFamily: 'sans-serif, OpenSans'}}>Contact us: 09134228578</Typography.Link>
+          <Typography.Link href='mailto:nifemiojinni22@gmail.com' style={{marginLeft: '90px', fontFamily: 'sans-serif, OpenSans'}}>Send an Email</Typography.Link>
         </div>
         <div className="social-icons">
           <a

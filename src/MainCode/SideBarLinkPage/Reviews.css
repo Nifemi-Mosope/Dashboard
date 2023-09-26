@@ -34,6 +34,7 @@
 .user-details {
   display: flex;
   flex-direction: column;
+  font-style: OpenSans;
 }
 
 .username {
@@ -99,11 +100,10 @@
 
 .comment-input input {
   flex: 1;
-  padding: 5px;
+  padding: 2%;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-right: 200px;
-  width: 10%;
+  border-radius: 4%;
+  margin-right: 100px;
 }
 
 .comment-input button {
@@ -127,4 +127,9 @@
     height: 30px;
     border-color: #c45628;
     cursor: pointer;
+}
+
+.disabled-button {
+  background-color: #ccc;
+  color: #999;
 }

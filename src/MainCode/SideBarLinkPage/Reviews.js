@@ -7,32 +7,16 @@ import {
   DislikeFilled,
 } from "@ant-design/icons";
 import moment from "moment/moment";
+import profileUserImage from '../../components/DashboardComponents/Quickee.jpeg'
 
 function Reviews() {
-  // Sample review data
-  const [reviews, setReviews] = useState([
-    {
-      username: "John Doe",
-      date: "August 30, 2023",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      userImage: "https://via.placeholder.com/150",
-      likeCount: 10,
-      dislikeCount: 30,
-    },
-    {
-      username: "Alice Smith",
-      date: "August 29, 2023",
-      content: "Pellentesque eget magna sit amet purus gravida consectetur.",
-      userImage: "https://via.placeholder.com/150",
-      likeCount: 10,
-      dislikeCount: 30,
-    },
-  ]);
-
+  const [reviews, setReviews] = useState([]);
   const [likedReviews, setLikedReviews] = useState({});
   const [dislikedReviews, setDislikedReviews] = useState({});
   const [showInput, setShowInput] = useState(false);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [newCommentUserImage, setNewCommentUserImage] = useState(profileUserImage);
 
   const handleLikeClick = (index) => {
     const updatedReviews = [...reviews];
@@ -71,7 +55,7 @@ function Reviews() {
     const newReviewObj = {
       username: 'QuicKee Restaurant',
       content: newComment,
-      userImage: 'dislikeCount',
+      userImage: newCommentUserImage,
       likeCount: 0,
       dislikeCount: 0,
       date: timestamp,
@@ -80,6 +64,13 @@ function Reviews() {
 
     setNewComment('');
     setShowInput(false);
+    setIsButtonDisabled(true); // Disable the button after sending a comment
+  };
+
+  const handleCommentInputChange = (e) => {
+    const inputText = e.target.value;
+    setNewComment(inputText);
+    setIsButtonDisabled(inputText === ''); // Disable the button if the input is empty
   };
 
   return (
@@ -95,7 +86,7 @@ function Reviews() {
           </div>
           <p className="review-content">{review.content}</p>
           <div className="review-actions">
-            <span className={`like-count ${likedReviews[index] ? 'active' : ''}`}>
+            <span className={`like-count ${likedReviews[index] ? "active" : ""}`}>
               {likedReviews[index] ? (
                 <>
                   <HeartFilled
@@ -111,7 +102,7 @@ function Reviews() {
                 </>
               )}
             </span>
-            <span className={`dislike-count ${dislikedReviews[index] ? 'active' : ''}`}>
+            <span className={`dislike-count ${dislikedReviews[index] ? "active" : ""}`}>
               {dislikedReviews[index] ? (
                 <>
                   <DislikeFilled
@@ -130,16 +121,21 @@ function Reviews() {
           </div>
         </div>
       ))}
-      <div className={`add-comment ${showInput ? 'active' : ''}`}>
+      <div className={`add-comment ${showInput ? "active" : ""}`}>
         {showInput ? (
           <div className="comment-input">
             <input
               type="text"
               placeholder="Type your comment here"
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+              onChange={handleCommentInputChange}
+              className="input-field"
             />
-            <button className="send-button" onClick={handleSendClick}>
+            <button
+              className={`send-button ${isButtonDisabled ? "disabled-button" : ""}`}
+              onClick={handleSendClick}
+              disabled={isButtonDisabled}
+            >
               Send
             </button>
           </div>
@@ -154,4 +150,3 @@ function Reviews() {
 }
 
 export default Reviews;
-

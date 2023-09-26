@@ -6,9 +6,10 @@ import RecentOrders from "../../components/DashboardComponents/RecentOrders";
 
 function Dashboard() {
   return (
-    <Space size={20} direction="vertical">
+    <div style={{ overflowX: "hidden" }}>
+    <Space size={10} direction="vertical">
       <Typography.Title level={3}>Dashboard</Typography.Title>
-      <Space size={20}>
+      <Space size={15}>
         <DashboardCard
           icon={<ShoppingCart weight="fill" color="green" size={30} />}
           title={"Orders"}
@@ -39,11 +40,14 @@ function Dashboard() {
           previousValue={130000}
         />
       </Space>
-      <Space>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <RecentOrders />
-        <DashboardChart />
-      </Space>
+        <div style={{ marginLeft: '20px' }}> {/* Adjust the margin as needed */}
+          <DashboardChart />
+        </div>
+      </div>
     </Space>
+    </div>
   );
 }
 

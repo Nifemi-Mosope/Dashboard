@@ -70,17 +70,25 @@ function RecentOrders() {
     ];
   
     return (
-      <>
-        <Typography.Text>Recent Orders</Typography.Text>
+      <Card
+        title="Recent Orders"
+        style={{
+          width: '50%',
+          border: '1px solid #e8e8e8',
+          borderRadius: '5px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          marginTop: '0%'
+        }}
+      >
         <Table
           columns={columns}
           loading={loading}
           dataSource={dataSource}
           pagination={true}
-          style={{ width: '85%' }}
+          style={{ width: '100%' }}
           scroll={{ y: 150, maxHeight: '70vh' }}
         ></Table>
-      </>
+      </Card>
     );
 }
 
