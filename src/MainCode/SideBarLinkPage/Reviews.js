@@ -5,6 +5,7 @@ import {
   DislikeOutlined,
   HeartFilled,
   DislikeFilled,
+  SendOutlined
 } from "@ant-design/icons";
 import moment from "moment/moment";
 import profileUserImage from '../../components/DashboardComponents/Quickee.jpeg'
@@ -17,6 +18,7 @@ function Reviews() {
   const [newComment, setNewComment] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [newCommentUserImage, setNewCommentUserImage] = useState(profileUserImage);
+  const [hasReviews, setHasReviews] = useState(false);
 
   const handleLikeClick = (index) => {
     const updatedReviews = [...reviews];
@@ -64,17 +66,24 @@ function Reviews() {
 
     setNewComment('');
     setShowInput(false);
-    setIsButtonDisabled(true); // Disable the button after sending a comment
+    setIsButtonDisabled(true);
+
+    setHasReviews(true);
   };
 
   const handleCommentInputChange = (e) => {
     const inputText = e.target.value;
     setNewComment(inputText);
-    setIsButtonDisabled(inputText === ''); // Disable the button if the input is empty
+    setIsButtonDisabled(inputText === '');
   };
 
   return (
     <div className="reviews-container">
+      {hasReviews ? null : (
+        <div style={{fontFamily: 'sans-serif', fontSize: '1.2rem', textAlign: 'center', color: 'grey', marginLeft: '15rem', marginTop: '10rem'}}>
+          No Reviews yet, Click the button on your bottom right to get started
+        </div>
+      )}
       {reviews.map((review, index) => (
         <div key={index} className="review">
           <div className="user-info">
@@ -93,12 +102,12 @@ function Reviews() {
                     style={{ color: "#c45628" }}
                     onClick={() => handleLikeClick(index)}
                   />
-                  <span>{review.likeCount}</span>
+                  <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.likeCount}</span>
                 </>
               ) : (
                 <>
                   <HeartOutlined onClick={() => handleLikeClick(index)} />
-                  <span>{review.likeCount}</span>
+                  <span style={{ fontFamily: 'sans-serif' }}>{review.likeCount}</span>
                 </>
               )}
             </span>
@@ -109,12 +118,12 @@ function Reviews() {
                     style={{ color: "#c45628" }}
                     onClick={() => handleDislikeClick(index)}
                   />
-                  <span>{review.dislikeCount}</span>
+                  <span style={{ color: "#c45628", fontFamily: 'sans-serif'}}>{review.dislikeCount}</span>
                 </>
               ) : (
                 <>
                   <DislikeOutlined onClick={() => handleDislikeClick(index)} />
-                  <span>{review.dislikeCount}</span>
+                  <span style={{ fontFamily: 'sans-serif' }}>{review.dislikeCount}</span>
                 </>
               )}
             </span>
@@ -126,22 +135,24 @@ function Reviews() {
           <div className="comment-input">
             <input
               type="text"
-              placeholder="Type your comment here"
+              placeholder="Say Something ..."
               value={newComment}
               onChange={handleCommentInputChange}
               className="input-field"
+              style={{width: '20rem'}}
             />
             <button
               className={`send-button ${isButtonDisabled ? "disabled-button" : ""}`}
               onClick={handleSendClick}
               disabled={isButtonDisabled}
+              style={{width: '5rem', marginBottom: '1rem'}}
             >
-              Send
+              <SendOutlined />
             </button>
           </div>
         ) : (
           <button className="add-comment-button" onClick={handleShowInputClick}>
-            Add a Comment
+            Say Something...
           </button>
         )}
       </div>

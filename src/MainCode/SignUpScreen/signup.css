@@ -1,13 +1,13 @@
 .rectangle {
-  width: 80%; /* Adjust the width as needed */
-  max-width: 600px; /* Limit the maximum width */
-  margin: 0 auto; /* Center horizontally */
+  width: 80%;
+  max-width: 600px;
+  margin: 0 auto;
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  position: relative; /* To allow positioning of the tab header */
-  top: 80px; /* Adjust the top margin as needed */
+  position: relative;
+  top: 80px;
 }
 
 label {
@@ -101,14 +101,13 @@ button[type="submit"]:hover {
 }
 
 .tab-header button.active {
-  filter: none; /* Remove blur for active button */
-  font-weight: bold; /* Highlight active button */
+  filter: none;
+  font-weight: bold;
 }
 
 .tab-header button.active::before {
   width: 100%;
 }
-/* Add these styles to your signup.css file */
 
 .button-container {
   text-align: right;
@@ -132,11 +131,11 @@ button[type="submit"]:hover {
 .previous-button:hover,
 .next-button:hover,
 .submit-button:hover {
-  background-color: #a2441e; /* Darker shade on hover */
+  background-color: #a2441e;
 }
 
 .next-button:disabled {
-  background-color: #ccc; /* Gray out the button when disabled */
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
@@ -145,13 +144,13 @@ button[type="submit"]:hover {
   top: 0;
   left: 0;
   right: 0;
-  background-color: #fff; /* Add a semi-transparent white background */
+  background-color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  z-index: 100; /* Ensure it's above other content */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  z-index: 100;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .title {
@@ -175,10 +174,9 @@ button[type="submit"]:hover {
 }
 
 .sign-in-button:hover {
-  background-color: #a2441e; /* Darker shade on hover */
+  background-color: #a2441e;
 }
 
-/* Add custom styles for the role dropdown */
 .role-dropdown {
   position: relative;
 }
@@ -197,24 +195,21 @@ button[type="submit"]:hover {
   cursor: pointer;
 }
 
-/* Style the custom arrow icon */
 .role-dropdown::after {
-  content: '\25BC'; /* Unicode down arrow character */
+  content: '\25BC';
   position: absolute;
   top: 50%;
   right: 10px;
   transform: translateY(-50%);
   font-size: 18px;
   color: #c45628;
-  pointer-events: none; /* Ensure the arrow doesn't interfere with select clicks */
+  pointer-events: none;
 }
 
-/* Add a subtle hover effect */
 .role-dropdown select:hover {
   background-color: #e0e0e0;
 }
 
-/* styles for the password toggle button */
 .password-toggle {
   background-color: #fff;
   border: none;
