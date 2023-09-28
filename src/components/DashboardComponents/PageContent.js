@@ -5,6 +5,7 @@ import Orders from '../../MainCode/SideBarLinkPage/Order';
 import History from '../../MainCode/SideBarLinkPage/OrderHistory';
 import Reviews from '../../MainCode/SideBarLinkPage/Reviews';
 import Menus from '../../MainCode/SideBarLinkPage/Menu';
+import Settings from '../../MainCode/SideBarLinkPage/Settings';
 
 function PageContent({ selectedMenuItem }) {
   return (
@@ -14,6 +15,7 @@ function PageContent({ selectedMenuItem }) {
       {selectedMenuItem === '/orderhistory' && <History />}
       {selectedMenuItem === '/reviews' && <Reviews />}
       {selectedMenuItem === '/menus' && <Menus />}
+      {selectedMenuItem === '/settings' && <Settings />}
     </div>
   );
 }

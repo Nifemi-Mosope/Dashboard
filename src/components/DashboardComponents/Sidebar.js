@@ -43,7 +43,7 @@ function Sidebar({ setSelectedMenuItem }) {
                     {
                         label: 'Settings',
                         icon: <SettingOutlined/>,
-                        key: '#',
+                        key: '/settings',
                     }
                 ]}
             ></Menu>
