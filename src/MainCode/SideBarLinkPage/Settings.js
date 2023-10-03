@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Card, Form, Button, Switch, Upload, message, Modal, Input } from "antd";
+import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
 import { UploadOutlined, PlusOutlined, LockOutlined } from "@ant-design/icons";
 
 function Settings() {
   const [form] = Form.useForm();
-  const [darkMode, setDarkMode] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
 
   const onFinish = (values) => {
     console.log("Form values:", values);
@@ -20,35 +20,13 @@ function Settings() {
   };
 
   const handlePasswordChange = () => {
-    // Implement the logic to send a request to the endpoint with the provided parameters
-    // You can use fetch or an HTTP library like Axios for this
-    // Example using fetch:
-    const endpoint = "/your-password-change-endpoint";
-    const requestData = {
-      Email: form.getFieldValue("Email"),
-      OTP: form.getFieldValue("OTP"),
-      NewPassword: form.getFieldValue("NewPassword"),
-    };
+    message.success("Password changed successfully");
+    setModalVisible(false);
+  };
 
-    fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify(requestData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          message.success("Password changed successfully");
-          setModalVisible(false);
-        } else {
-          message.error("Password change failed. Please check your inputs.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        message.error("An error occurred while changing the password.");
-      });
+  const handleAddStaff = () => {
+    message.success("New Staff Added Successfully");
+    setModalVisible(false);
   };
 
   return (
@@ -59,7 +37,6 @@ function Settings() {
           onFinish={onFinish}
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 16 }}
-          initialValues={{ darkMode }}
         >
           <div style={{ justifyContent: "space-between", alignItems: "flex-end" }}>
             <Form.Item label="Add New Staff">
@@ -68,10 +45,52 @@ function Settings() {
                 shape="round"
                 icon={<PlusOutlined />}
                 style={{ marginLeft: "35rem" }}
+                onClick={() => setAddStaffModalVisible(true)}
               >
                 Add Staff
               </Button>
             </Form.Item>
+
+            <Modal
+            open={addStaffModalVisible}
+            onCancel={() => setAddStaffModalVisible(false)}
+            title="Add New Staff"
+            footer={[
+              <Button key="cancel" onClick={() => setModalVisible(false)}>
+                Cancel
+              </Button>,
+              <Button key="change" type="primary" onClick={handleAddStaff}>
+                Add a new Staff
+              </Button>,
+            ]}
+            >
+              <Form form={form} onFinish={onFinish}>
+                <Form.Item
+                  label="Firstname"
+                  name="Firstname"
+                >
+                  <Input placeholder="Input staff firstname"/>
+                </Form.Item>
+                <Form.Item
+                  label="Lastname"
+                  name="Lastname"
+                >
+                  <Input placeholder="input staff Lastname"/>
+                </Form.Item>
+                <Form.Item
+                  label="Email"
+                  name="Email"
+                >
+                  <Input type="email" />
+                </Form.Item>
+                <Form.Item
+                  label="Password"
+                  name="Password"
+                >
+                  <Input.Password />
+                </Form.Item>
+              </Form>
+            </Modal>
 
             <Form.Item label="Update Signup Parameters">
               <Button
@@ -99,7 +118,6 @@ function Settings() {
             <Form.Item label="Upload/Update Kitchen Image">
               <Upload
                 name="kitchenImage"
-                action="/your-upload-api-endpoint"
                 onChange={handleFileUpload}
               >
                 <Button
@@ -114,10 +132,9 @@ function Settings() {
         </Form>
       </Card>
 
-      {/* Password Change Modal */}
       <Modal
         title="Change Password"
-        visible={modalVisible}
+        open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={[
           <Button key="cancel" onClick={() => setModalVisible(false)}>

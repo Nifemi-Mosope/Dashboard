@@ -99,7 +99,7 @@ function History() {
                 columns={tableColumns}
                 rowKey={"orderID"}
                 onRow={(orderItem) => ({
-                    onClick: () => navigate(`/orders/${orderItem.orderID}`)
+                    onClick: () => navigate('')
                 })}
             />
         </Card>

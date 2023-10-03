@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Input, Button, Space, Tag, Form, Modal, Select, Alert, Spin } from 'antd';
+import { Table, Input, Button, Space, Tag, Form, Modal, Select, Alert } from 'antd';
 import { useMenuContext } from './MenuContext';
 const { Column } = Table;
 const { Search } = Input;
@@ -122,7 +122,7 @@ const MenuScreen = () => {
   );
 
   return (
-    <div>
+    <div style={{marginLeft: '2%'}}>
       <div style={{ display: 'flex', flexDirection: 'row', marginLeft: 'auto' }}>
         <h1 style={{ fontFamily: 'sans-serif, OpenSans', marginTop: '1rem' }}>Menus</h1>
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: 'auto' }}>
