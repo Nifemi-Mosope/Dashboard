@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
-import { UploadOutlined, PlusOutlined, LockOutlined } from "@ant-design/icons";
+import { UploadOutlined, PlusOutlined, LockOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 
 function Settings() {
   const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
-
+  const [staffManagement, setStaffManagement] = useState([]); // State to store staff members
+  const [deleteStaffIndex, setDeleteStaffIndex] = useState(null); // State to track the staff to delete
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false); // State to control the delete confirmation modal
+  const [staffShowPasswords, setStaffShowPasswords] = useState([]);
+  
   const onFinish = (values) => {
     console.log("Form values:", values);
   };
@@ -24,9 +28,46 @@ function Settings() {
     setModalVisible(false);
   };
 
-  const handleAddStaff = () => {
+  const handleAddStaff = (values) => {
+    const { Firstname, Lastname, Password } = values;
+    const username = `${Firstname} ${Lastname}`; // Create the username
+  
+    // Create a staff member object
+    const staffMember = {
+      username,
+      password: Password,
+    };
+  
+    // Add the staff member to the staff management array
+    setStaffManagement([...staffManagement, staffMember]);
+  
+    // Add an initial showPassword state for the new staff member
+    setStaffShowPasswords([...staffShowPasswords, false]);
+  
     message.success("New Staff Added Successfully");
-    setModalVisible(false);
+    setAddStaffModalVisible(false);
+  };
+  
+
+  const togglePasswordVisibility = (index) => {
+    const updatedShowPasswords = [...staffShowPasswords];
+    updatedShowPasswords[index] = !updatedShowPasswords[index];
+    setStaffShowPasswords(updatedShowPasswords);
+  };
+
+  const handleDeleteStaff = () => {
+    if (deleteStaffIndex !== null) {
+      // Create a copy of the staff management array
+      const updatedStaffManagement = [...staffManagement];
+      
+      // Find the index of the staff member to delete
+      updatedStaffManagement.splice(deleteStaffIndex, 1);
+      setStaffManagement(updatedStaffManagement);
+
+      // Close the delete confirmation modal
+      setDeleteConfirmationVisible(false);
+      setDeleteStaffIndex(null);
+    }
   };
 
   return (
@@ -52,64 +93,85 @@ function Settings() {
             </Form.Item>
 
             <Modal
-            open={addStaffModalVisible}
-            onCancel={() => setAddStaffModalVisible(false)}
-            title="Add New Staff"
-            footer={[
-              <Button key="cancel" onClick={() => setModalVisible(false)}>
-                Cancel
-              </Button>,
-              <Button key="change" type="primary" onClick={handleAddStaff}>
-                Add a new Staff
-              </Button>,
-            ]}
+              open={addStaffModalVisible}
+              onCancel={() => setAddStaffModalVisible(false)}
+              title="Add New Staff"
+              footer={[
+                <Button key="cancel" onClick={() => setModalVisible(false)}>
+                  Cancel
+                </Button>,
+                <Button
+                  key="change"
+                  type="primary"
+                  onClick={() => form.validateFields().then(handleAddStaff)}
+                >
+                  Add a new Staff
+                </Button>,
+              ]}
             >
-              <Form form={form} onFinish={onFinish}>
+              <Form form={form}>
                 <Form.Item
                   label="Firstname"
                   name="Firstname"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter staff firstname",
+                    },
+                  ]}
                 >
-                  <Input placeholder="Input staff firstname"/>
+                  <Input placeholder="Input staff firstname" />
                 </Form.Item>
                 <Form.Item
                   label="Lastname"
                   name="Lastname"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter staff lastname",
+                    },
+                  ]}
                 >
-                  <Input placeholder="input staff Lastname"/>
+                  <Input placeholder="Input staff lastname" />
                 </Form.Item>
                 <Form.Item
                   label="Email"
                   name="Email"
+                  rules={[
+                    {
+                      type: "email",
+                      message: "Invalid email address",
+                    },
+                    {
+                      required: true,
+                      message: "Please enter email",
+                    },
+                  ]}
                 >
-                  <Input type="email" />
+                  <Input placeholder="Input email" />
                 </Form.Item>
                 <Form.Item
                   label="Password"
                   name="Password"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter password",
+                    },
+                  ]}
                 >
-                  <Input.Password />
+                  <Input.Password style={{ height: '40px', width: '80%' }} />
                 </Form.Item>
               </Form>
             </Modal>
-
-            <Form.Item label="Update Signup Parameters">
-              <Button
-                type="primary"
-                shape="round"
-                icon={<PlusOutlined />}
-                style={{ marginLeft: "33rem" }}
-              >
-                Update Entities
-              </Button>
-            </Form.Item>
 
             <Form.Item label="Change Password">
               <Button
                 type="primary"
                 shape="round"
                 icon={<LockOutlined />}
-                style={{ marginLeft: "30rem" }}
-                onClick={() => setModalVisible(true)} // Open the modal on button click
+                style={{ marginLeft: "30rem", height: '10%' }}
+                onClick={() => setModalVisible(true)}
               >
                 Change your Password
               </Button>
@@ -184,6 +246,48 @@ function Settings() {
           </Form.Item>
         </Form>
       </Modal>
+
+
+      {/* Staff Managment Side */}
+      <Modal
+        title="Confirm Deletion"
+        open={deleteConfirmationVisible}
+        onOk={handleDeleteStaff}
+        onCancel={() => setDeleteConfirmationVisible(false)}
+      >
+        Do you want to delete the staff with username:{" "}
+        {deleteStaffIndex !== null ? staffManagement[deleteStaffIndex].username : ""}?
+      </Modal>
+
+      <div style={{ marginTop: "2rem" }}>
+        <Card title="Staff Management" style={{ width: "60rem" }}>
+          <ul>
+          {staffManagement.map((staff, index) => (
+            <li key={index}>
+              {staff.username} - {staffShowPasswords[index] ? staff.password : "******"}{" "}
+              <Button
+                icon={<EyeOutlined />}
+                onClick={() => togglePasswordVisibility(index)}
+                style={{ marginLeft: "1rem", marginTop: '2%' }}
+              >
+                {staffShowPasswords[index] ? "Hide" : "Show"} Password
+              </Button>{" "}
+              <Button
+                icon={<DeleteOutlined />}
+                onClick={() => {
+                  setDeleteStaffIndex(index);
+                  setDeleteConfirmationVisible(true);
+                }}
+                style={{ marginLeft: "1rem" }}
+              >
+                Delete Staff
+              </Button>
+            </li>
+          ))}
+
+          </ul>
+        </Card>
+      </div>
     </div>
   );
 }

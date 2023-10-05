@@ -18,7 +18,7 @@ function Dashboard() {
         />
         <DashboardCard
           icon={<Hamburger weight="fill" color="green" size={30} />}
-          title={"Most Food Ordered"}
+          title={"Most Ordered Food"}
           value={"Jollof Rice"}
         />
         <DashboardCard
@@ -60,7 +60,7 @@ function DashboardCard({ title, value, icon, previousValue }) {
       <Space direction="horizontal" size={8}>
         {icon}
         <Statistic title={title} value={value} />
-        {title !== "Most Food Ordered" && (
+        {title !== "Most Ordered Food" && (
           <span style={{ color: increase ? "green" : "red" }}>
             {increase ? `+${percentageChange.toFixed(2)}%` : `${percentageChange.toFixed(2)}%`}
           </span>

@@ -1,7 +1,7 @@
 import React from 'react';
-import './dash.css'
+import './dash.css';
 import { Menu } from 'antd';
-import {AppstoreOutlined, SettingOutlined} from '@ant-design/icons'
+import { AppstoreOutlined, SettingOutlined } from '@ant-design/icons';
 import { ChatCircleDots, ClockCounterClockwise, CookingPot, ShoppingCart } from 'phosphor-react';
 
 function Sidebar({ setSelectedMenuItem }) {
@@ -22,30 +22,31 @@ function Sidebar({ setSelectedMenuItem }) {
                     },
                     {
                         label: 'Orders',
-                        icon: <ShoppingCart/>,
+                        icon: <ShoppingCart />,
                         key: '/orders',
                     },
                     {
                         label: 'Order History',
-                        icon: <ClockCounterClockwise/>,
+                        icon: <ClockCounterClockwise />,
                         key: '/orderhistory',
                     },
                     {
                         label: 'Reviews',
-                        icon: <ChatCircleDots/>,
+                        icon: <ChatCircleDots />,
                         key: '/reviews',
                     },
                     {
                         label: 'Menus',
-                        icon: <CookingPot/>,
+                        icon: <CookingPot />,
                         key: '/menus',
                     },
                     {
                         label: 'Settings',
-                        icon: <SettingOutlined/>,
+                        icon: <SettingOutlined />,
                         key: '/settings',
                     }
                 ]}
+                style={{ height: '688px' }}
             ></Menu>
         </div>
     )
