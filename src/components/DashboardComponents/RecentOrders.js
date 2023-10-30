@@ -1,5 +1,5 @@
-import { Card, Space, Statistic, Table, Typography } from "antd";
 import React, { useEffect, useState }  from "react";
+import { Card, Space, Statistic, Table, Typography } from "antd";
 
 function RecentOrders() {
     const [dataSource, setDataSource] = useState([]);
@@ -12,7 +12,7 @@ function RecentOrders() {
         {
           key: "1",
           fullName: "John Doe",
-          orderID: Math.floor(100000 + Math.random() * 900000), // Generates a random 6-digit number
+          orderID: Math.floor(100000 + Math.random() * 900000),
           title: "Burger",
           price: 10.99,
         },

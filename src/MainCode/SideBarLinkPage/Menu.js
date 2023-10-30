@@ -1,52 +1,14 @@
-import React, { useState } from 'react';
-import { Table, Input, Button, Space, Tag, Form, Modal, Select, Alert } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Input, Button, Space, Tag, Form, Modal, Select, Alert, message } from 'antd';
 import { useMenuContext } from './MenuContext';
+import { CreateMenu, UpdateMenu, DeleteMenu, GetKitchenMenus } from '../Features/KitchenSlice';
+
 const { Column } = Table;
 const { Search } = Input;
 
-const initialMenuItems = [
-  {
-    key: '1',
-    foodName: 'Jollof Rice',
-    foodPrice: 1500,
-    foodQuantity: 10,
-    foodStatus: 'available',
-    foodCategory: 'Food',
-    foodClass: 'Rice',
-  },
-  {
-    key: '2',
-    foodName: 'Fried Rice',
-    foodPrice: 2000,
-    foodQuantity: 8,
-    foodStatus: 'available',
-    foodCategory: 'Food',
-    foodClass: 'Rice',
-  },
-  {
-    key: '3',
-    foodName: 'Chicken',
-    foodPrice: 1000,
-    foodQuantity: 0,
-    foodStatus: 'finished',
-    foodCategory: 'Food',
-    foodClass: 'Proteins',
-  },
-  {
-    key: '4',
-    foodName: 'Beans',
-    foodPrice: 1000,
-    foodQuantity: 40,
-    foodStatus: 'available',
-    foodCategory: 'Food',
-    foodClass: 'Beans',
-  },
-];
-
 const MenuScreen = () => {
-  const [menuItems, setMenuItems] = useState(initialMenuItems);
-  const { isModalVisible, openModal, closeModal } = useMenuContext();
-  const [formValues, setFormValues] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const { isModalVisible, openModal, closeModal, userData, auth, setMenus, menus } = useMenuContext();
   const [newMenuAlertVisible, setNewMenuAlertVisible] = useState(false);
   const [editMenuAlertVisible, setEditMenuAlertVisible] = useState(false);
   const [deleteMenuAlertVisible, setDeleteMenuAlertVisible] = useState(false);
@@ -54,47 +16,102 @@ const MenuScreen = () => {
   const [editItem, setEditItem] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [formData, setFormData] = useState({
+    KitchenId: userData.Id,
+    FoodName: '',
+    Category: '',
+    Class: '',
+    TotalQuantity: '',
+    Status: '',
+    Price: ''
+  });
+  const [loadingMenus, setLoadingMenus] = useState(true)
 
-  const handleFormSubmit = (values) => {
-    setLoading(true);
-
-    setTimeout(() => {
-      setFormValues(values);
-      closeModal();
-      if (editItem) {
-        const updatedMenuItems = menuItems.map((item) => {
-          if (item.key === editItem.key) {
-            return {
-              ...item,
-              foodPrice: values.foodPrice,
-              foodQuantity: values.foodQuantity,
-              foodStatus: values.foodQuantity > 0 ? 'available' : 'finished',
-            };
-          }
-          return item;
-        });
-        setMenuItems(updatedMenuItems);
-        setEditItem(null);
-        setEditMenuAlertVisible(true);
+  const fetchMenus = async () => {
+    try {
+      setLoadingMenus(true);
+      const response = await GetKitchenMenus(userData, auth);
+      if (response.code === 200) {
+        setMenuItems(response.body);
       } else {
-        const newMenuItem = {
-          key: (menuItems.length + 1).toString(),
-          ...values,
-          foodStatus: values.foodQuantity > 0 ? 'available' : 'finished',
-        };
-        setMenuItems([...menuItems, newMenuItem]);
-        setNewMenuAlertVisible(true);
+        message.error('Failed to fetch menus');
       }
-      setLoading(false);
-    }, 1000);
+      setLoadingMenus(false);
+    } catch (error) {
+      console.error(error);
+      message.error('Internal Server Error', error);
+      setLoadingMenus(false);
+    }
   };
+
+  useEffect(() => {
+    fetchMenus();
+  }, [userData.Id, auth]);
+
+  const handleFormSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const newValues = {
+        ...formData,
+        Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
+      };
+
+      const response = await CreateMenu(newValues, auth);
+      // console.log(response);
+
+      if (response.code === 200) {
+        if (editItem) {
+          const updatedMenuItems = Array.isArray(menuItems)
+            ? menuItems.map((item) => {
+                if (item.key === editItem.key) {
+                  return {
+                    ...item,
+                    Price: values.Price,
+                    TotalQuantity: values.TotalQuantity,
+                    Status: values.TotalQuantity > 0 ? 'available' : 'finished',
+                  };
+                }
+                return item;
+              })
+            : [];
+          setMenuItems(updatedMenuItems);
+          setEditItem(null);
+        } else {
+          const newMenuItem = Array.isArray(menuItems)
+            ? {
+                key: response.body.Id,
+                ...formData,
+                Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
+              }
+            : {};
+          setMenuItems(Array.isArray(menuItems) ? [...menuItems, newMenuItem] : [newMenuItem]);
+          message.success('Menu item created successfully.');
+          console.log(response)
+        }
+        fetchMenus();
+        closeModal();
+        setMenus(response.body);
+        localStorage.setItem('menus', JSON.stringify(response.body));
+      } else {
+        setLoading(false);
+        message.error('Failed to create menu');
+      }
+    } catch (error) {
+      // console.log(error);
+      message.error('Internal Server Error', error);
+    } finally {
+      setLoading(false);
+    }
+  }; 
+       
 
   const handleEdit = (record) => {
     setEditItem(record);
     setEditModalVisible(true);
   };
+  const menuId = menus ? menus.Id : null;
 
-  const handleDelete = (record) => {
+  const handleDelete = async (record) => {
     Modal.confirm({
       title: 'Confirm Deletion',
       content: 'Are you sure you want to delete this menu item?',
@@ -103,34 +120,92 @@ const MenuScreen = () => {
       okButtonProps: {
         type: 'danger',
       },
-      onOk: () => {
-        const updatedMenuItems = menuItems.filter((item) => item.key !== record.key);
-        setMenuItems(updatedMenuItems);
-        setDeleteMenuAlertVisible(true);
+      onOk: async () => {
+        try {
+          const response = await DeleteMenu(auth, record);
+          console.log(response)
+          if (response.message === `FoodMenu with id ${menuId} has been deleted!`) {
+            const updatedMenuItems = menuItems.filter((item) => item.key !== record.key);
+            setMenuItems(updatedMenuItems);
+  
+            const updatedMenus = menus.filter((menu) => menu.Id !== record.key);
+            setMenus(updatedMenus);
+  
+            localStorage.setItem('menus', JSON.stringify(updatedMenus));
+  
+            message.success('Menu item deleted successfully');
+          }
+          fetchMenus()
+        } catch (error) {
+          console.error(error);
+        }
       },
     });
+  };  
+    
+           
+  const handleEditFormSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const newValues = {
+        TotalQuantity: values.TotalQuantity,
+        Price: values.Price,
+        Status: values.TotalQuantity > 0 ? 'available' : 'finished',
+      };
+  
+      const response = await UpdateMenu(newValues, auth, menus);
+      if (response.code === 200) {
+        const updatedMenuItems = menuItems.map((item) => {
+          if (item.key === menus.key) {
+            return {
+              ...item,
+              Price: values.Price,
+              TotalQuantity: values.TotalQuantity,
+              Status: values.TotalQuantity > 0 ? 'available' : 'finished',
+            };
+          }
+          return item;
+        });
+        setMenuItems(updatedMenuItems);
+        message.success('Menu item updated successfully.');
+  
+        setMenus(response.body);
+        localStorage.setItem('menus', JSON.stringify(response.body));
+      } else {
+        console.error('Failed to update menu item');
+      }
+    } catch (error) {
+      console.error(error);
+      message.error('Internal Server Error', error);
+    } finally {
+      setLoading(false);
+    };
   };
+  
 
-  const handleEditFormSubmit = (values) => {
-    setEditModalVisible(false);
-    setEditItem(null);
-    handleFormSubmit(values);
-  };
+  const filteredMenuItems = menuItems ? menuItems.filter((item) =>
+    item.FoodName && item.FoodName.toLowerCase().includes(searchText.toLowerCase())
+  ) : [];
 
-  const filteredMenuItems = menuItems.filter((item) =>
-    item.foodName.toLowerCase().includes(searchText.toLowerCase())
-  );
+
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setFormData({
+    ...formData,
+    [name]: value,
+  });
+};
 
   return (
-    <div style={{marginLeft: '2%'}}>
+    <div style={{ marginLeft: '2%' }}>
       <div style={{ display: 'flex', flexDirection: 'row', marginLeft: 'auto' }}>
         <h1 style={{ fontFamily: 'sans-serif, OpenSans', marginTop: '1rem' }}>Menus</h1>
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: 'auto' }}>
           <Search
-          placeholder="Search for menus"
-          style={{ width: '20rem', marginRight: '1rem', marginTop: '1rem' }}
-          allowClear
-          onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Search for menus"
+            style={{ width: '20rem', marginRight: '1rem', marginTop: '1rem' }}
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
           />
           <Button type="primary" style={{ marginLeft: 'auto', marginTop: '1rem' }} onClick={openModal}>
             Add a new menu
@@ -138,20 +213,23 @@ const MenuScreen = () => {
         </div>
       </div>
       <Table dataSource={filteredMenuItems} style={{ width: '60rem', marginLeft: '5rem' }}>
-        <Column title="Food Name" dataIndex="foodName" key="foodName" />
-        <Column title="Food Category" dataIndex="foodCategory" key="foodCategory" />
-        <Column title="Food Price (Naira)" dataIndex="foodPrice" key="foodPrice" />
-        <Column title="Food Quantity" dataIndex="foodQuantity" key="foodQuantity" />
-        <Column title="Food Class" dataIndex="foodClass" key="foodClass" />
+        <Column title="Food Name" dataIndex="FoodName" key="FoodName" />
+        <Column title="Food Category" dataIndex="Category" key="Category" />
+        <Column title="Food Price (Naira)" dataIndex="Price" key="Price" />
+        <Column title="Food Quantity" dataIndex="TotalQuantity" key="TotalQuantity" />
+        <Column title="Food Class" dataIndex="Class" key="Class" />
 
         <Column
           title="Food Status"
-          dataIndex="foodStatus"
+          dataIndex="TotalQuantity"
           key="foodStatus"
-          render={(status) => (
-            <Tag color={status === 'available' ? 'green' : 'red'}>{status}</Tag>
+          render={(quantity) => (
+            <Tag color={quantity > 0 ? 'green' : 'red'}>
+              {quantity > 0 ? 'available' : 'finished'}
+            </Tag>
           )}
         />
+
         <Column
           title="Action"
           key="action"
@@ -167,44 +245,32 @@ const MenuScreen = () => {
           )}
         />
       </Table>
+
       <Modal
         title="Add a new menu"
         open={isModalVisible}
         onCancel={closeModal}
         footer={null}
       >
-        <Form
-          onFinish={handleFormSubmit}
-          initialValues={{
-            foodName: '',
-            foodCategory: undefined,
-            foodClass: undefined,
-            foodPrice: undefined,
-            foodQuantity: undefined,
-            foodStatus: undefined,
-          }}
-        >
-          <Form.Item
-            label="Food Name"
-            name="foodName"
-            rules={[
-              {
-                required: true,
-                message: 'Please input the name of your food',
-              },
-            ]}
-          >
-            <div>
-              <Input
+        <Form onFinish={handleFormSubmit}>
+          <Form.Item name="FoodName">
+            <div style={{ justifyContent: 'flex-start' }}>
+              <label htmlFor="foodName">Food Name</label>
+              <input
                 type="text"
-                placeholder="What is the name of your food?"
-                style={{ width: '60%', height: '29px' }}
+                id="FoodName"
+                name="FoodName"
+                placeholder="Input food name"
+                style={{ width: '70%', height: '10px', borderRadius: 5 }}
+                value={formData.FoodName}
+                onChange={handleInputChange}
+                required
               />
             </div>
           </Form.Item>
           <Form.Item
-            label=" Category"
-            name="foodCategory"
+            label="Category"
+            name="Category"
             rules={[
               {
                 required: true,
@@ -212,7 +278,7 @@ const MenuScreen = () => {
               },
             ]}
           >
-            <Select style={{ width: '60%' }}>
+            <Select style={{ width: '60%' }} onChange={(value) => setFormData({ ...formData, Category: value })}>
               <Select.Option value="Food">Food</Select.Option>
               <Select.Option value="Snacks">Snacks</Select.Option>
               <Select.Option value="Drinks">Drinks</Select.Option>
@@ -220,7 +286,7 @@ const MenuScreen = () => {
           </Form.Item>
           <Form.Item
             label="Food Class"
-            name="foodClass"
+            name="Class"
             rules={[
               {
                 required: true,
@@ -228,7 +294,7 @@ const MenuScreen = () => {
               },
             ]}
           >
-            <Select style={{ width: '60%' }}>
+            <Select style={{ width: '60%' }} onChange={(value) => setFormData({ ...formData, Class: value })}>
               <Select.Option value="Rice">Rice</Select.Option>
               <Select.Option value="Beans">Beans</Select.Option>
               <Select.Option value="Yam">Yam</Select.Option>
@@ -237,41 +303,33 @@ const MenuScreen = () => {
               <Select.Option value="Others">Others</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item
-            label="Food Price (Naira)"
-            name="foodPrice"
-            rules={[
-              {
-                required: true,
-                message: 'Please input the price of your food',
-              },
-            ]}
-          >
-            <div style={{ width: '60%' }}>
-              <Input
-                placeholder="input price"
+          <Form.Item name="Price">
+            <div style={{ justifyContent: 'flex-start' }}>
+              <label>Food Price (Naira)</label>
+              <input
                 type="number"
-                style={{ height: '45px', bottom: '10px' }}
+                placeholder="Input food price"
+                style={{ width: '70%', height: '10px', borderRadius: 5 }}
+                name="Price"
+                value={formData.Price}
+                onChange={(e) => setFormData({ ...formData, Price: e.target.value })}
+                required
               />
             </div>
           </Form.Item>
-          <Form.Item
-            label="Food Quantity"
-            name="foodQuantity"
-            rules={[
-              {
-                required: true,
-                message: 'Please input the quantity of your food',
-              },
-            ]}
-          >
-            <div style={{ width: '60%' }}>
-              <Input
-                placeholder="input quantity"
-                style={{ height: '45px', bottom: '10px' }}
-                type="number"
-              />
-            </div>
+          <Form.Item name="TotalQuantity">
+          <div style={{ justifyContent: 'flex-start' }}>
+            <label>Food Quantity</label>
+            <input
+              type="number"
+              placeholder="Input food quantity"
+              style={{ width: '70%', height: '10px', borderRadius: 5 }}
+              name="TotalQuantity"
+              value={formData.TotalQuantity}
+              onChange={(e) => setFormData({ ...formData, TotalQuantity: e.target.value })}
+              required
+            />
+          </div>
           </Form.Item>
           <Button
             type="primary"
@@ -332,15 +390,14 @@ const MenuScreen = () => {
         <Form
           onFinish={handleEditFormSubmit}
           initialValues={{
-            foodName: '',
-            foodPrice: undefined,
-            foodQuantity: undefined,
-            ...editItem,
+            FoodName: editItem ? editItem.FoodName : '',
+            Price: editItem ? editItem.Price : undefined,
+            TotalQuantity: editItem ? editItem.TotalQuantity : undefined,
           }}
         >
           <Form.Item
             label="Food Price (Naira)"
-            name="foodPrice"
+            name="Price"
             rules={[
               {
                 required: true,
@@ -348,17 +405,15 @@ const MenuScreen = () => {
               },
             ]}
           >
-            <div style={{ width: '60%' }}>
-              <Input
-                placeholder="input price"
-                type="number"
-                style={{ height: '45px', bottom: '10px' }}
-              />
-            </div>
+            <Input
+              placeholder="input price"
+              type="number"
+              style={{ height: '45px', bottom: '10px' }}
+            />
           </Form.Item>
           <Form.Item
             label="Food Quantity"
-            name="foodQuantity"
+            name="TotalQuantity"
             rules={[
               {
                 required: true,
@@ -366,13 +421,11 @@ const MenuScreen = () => {
               },
             ]}
           >
-            <div style={{ width: '60%' }}>
-              <Input
-                placeholder="input quantity"
-                style={{ height: '45px', bottom: '10px' }}
-                type="number"
-              />
-            </div>
+            <Input
+              placeholder="input quantity"
+              style={{ height: '45px', bottom: '10px' }}
+              type="number"
+            />
           </Form.Item>
           <Button
             type="primary"

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import '../SignUpScreen/signup.css';
 import { Link, useNavigate } from 'react-router-dom';
+import { Signin } from '../Features/KitchenSlice';
+import { notification } from 'antd';
+import { useMenuContext } from '../SideBarLinkPage/MenuContext';
 
 function SignIn() {
-  const [passwordVisible, setPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    role: '',
+    Email: '',
+    Password: '',
   });
 
   const handleInputChange = (e) => {
@@ -19,57 +20,94 @@ function SignIn() {
   };
 
   const navigate = useNavigate();
+  const { setUser, setAuth } = useMenuContext();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      Email: formData.Email,
+      Password: formData.Password,
+    }
+    try {
+      const response = await Signin(payload);
+      // console.log(response);
+      if (response.code === 200) {
+        localStorage.setItem('userData', JSON.stringify(response.body));
+        localStorage.setItem('auth', JSON.stringify(response.extrainfo));
+        notification.success({
+          message: 'Login Successful',
+          description: 'Welcome back to QuicKee, your kitchen trusted companion. Were delighted to see you again. Thank you for choosing QuicKee, where your culinary journey begins!',
+        });
+        setUser(response.body);
+        setAuth(response.extrainfo)
+        // console.log(response.extrainfo);
+        navigate('/home');
+      } else if(response.message === "Incorrect Password") {
+        notification.error({
+          message: 'Incorrect Credential',
+          description: 'Incorrect Email or password. Check your login details again',
+        });
+      } else if(response.message === "User not found") {
+        notification.error({
+          message: 'User not found',
+          description: 'This User is not found. Check your login credentials again',
+        });
+      } else if (response.message === "Unverified email"){
+        notification.error({
+          message: 'User not found',
+          description: 'This User is not found. Check your login credentials again',
+        });
+      }
+    } catch (error) {
+      // console.error(error);
+      notification.error({
+        message: 'Sign Up Failed',
+        description: 'An unexpected error occurred during sign-up. Please try again.',
+      });
+    }
+    // console.log(formData);
+  }; 
 
-    navigate('/home');
-    console.log(formData);
-  };
-
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
+  const handleGoToSignUp = () => {
+    navigate('/');
+  }
 
   return (
     <div className="glass-morphism">
       <div className='fixed-header'>
         <h1 className='title' onClick={() => window.location.reload()}>QuicKee</h1>
-        <Link to="/" className='sign-in-button'>Sign Up</Link>
+        <button onClick={handleGoToSignUp} className='sign-in-button'>SignUp</button>
       </div>
       <div className="rectangle">
         <div>
-          <h2 style={{ textAlign: 'center', marginTop: '0%' }}>Login To Your Account</h2>
+          <h2 style={{ textAlign: 'center', marginTop: '0%', fontFamily: 'sans-serif' }}>Login To Your Account</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="Email" style={{ fontFamily: 'sans-serif' }}>Email</label>
               <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Enter your username"
-                value={formData.username}
+                type="email"
+                id="Email"
+                name="Email"
+                placeholder="Enter your email"
+                value={formData.Email}
                 onChange={handleInputChange}
                 required
               />
             </div>
             <div className="input-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="Password" style={{ fontFamily: 'sans-serif' }}>Password</label>
               <input
-                type={passwordVisible ? 'text' : 'password'}
-                id="password"
-                name="password"
+                type='password'
+                id="Password"
+                name="Password"
                 placeholder="Enter your password"
-                value={formData.password}
+                value={formData.Password}
                 onChange={handleInputChange}
                 required
               />
-              <button
-                  className="password-toggle"
-                  onClick={togglePasswordVisibility}
-                >
-                  {passwordVisible ? 'Hide' : 'Show'}
-                </button>
+            </div>
+            <div style={{ marginLeft: '7%', fontFamily: 'sans-serif' }}>
+              <p>Forgot Password? <Link to="/forgotpassword">Click here</Link></p>
             </div>
             <div className="button-container">
               <button type="submit" className="submit-button">

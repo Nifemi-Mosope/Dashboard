@@ -1,53 +1,128 @@
 import React, { useState } from "react";
 import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
 import { UploadOutlined, PlusOutlined, LockOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useMenuContext } from "./MenuContext";
+import { AddStaff, UploadImage } from "../Features/KitchenSlice";
 
 function Settings() {
-  const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
-  const [staffManagement, setStaffManagement] = useState([]); // State to store staff members
-  const [deleteStaffIndex, setDeleteStaffIndex] = useState(null); // State to track the staff to delete
-  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false); // State to control the delete confirmation modal
+  const [staffManagement, setStaffManagement] = useState([]);
+  const [deleteStaffIndex, setDeleteStaffIndex] = useState(null);
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const [staffShowPasswords, setStaffShowPasswords] = useState([]);
-  
+  const { userData, auth, setStaffs, setImage } = useMenuContext();
+  const [formData, setFormData] = useState({
+    FirstName: '',
+    KitchenId: userData.Id,
+    LastName: '',
+    Email: '',
+    Password: '',
+    Phone: '',
+    University: userData.University,
+    Role: '',
+  });
+  const [isFormFilled, setIsFormFilled] = useState(false);
+  const [isAddingStaff, setIsAddingStaff] = useState(false);
+  const [uploadImageModalVisible, setUploadImageModalVisible] = useState(false);
+
   const onFinish = (values) => {
     console.log("Form values:", values);
   };
 
-  const handleFileUpload = (info) => {
-    if (info.file.status === "done") {
-      message.success(`${info.file.name} file uploaded successfully`);
-    } else if (info.file.status === "error") {
-      message.error(`${info.file.name} file upload failed.`);
-    }
+  const isFormValid = () => {
+    return (
+      formData.FirstName !== '' &&
+      formData.LastName !== '' &&
+      formData.Email !== '' &&
+      formData.Phone !== '' &&
+      formData.University !== '' &&
+      formData.Password !== ''
+    );
   };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    setIsFormFilled(isFormValid());
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
+  const handleUpload = async () => {
+    try {
+      const formData = new FormData();
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput.files[0]) {
+        formData.append("image", fileInput.files[0]);
+        formData.append("KitchenId", userData.Id);
+  
+        const response = await UploadImage(formData);
+  
+        if (response.code === 200) {
+          localStorage.setItem('Image', JSON.stringify(response.extrainfo));
+          message.success("Image uploaded successfully");
+          setUploadImageModalVisible(false);
+          // console.log(response.extrainfo)
+          setImage(response.extrainfo)
+        }
+      } else {
+        message.error("Please select an image to upload.");
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("An error occurred during image upload.");
+    }
+  }
+  
 
   const handlePasswordChange = () => {
     message.success("Password changed successfully");
     setModalVisible(false);
   };
 
-  const handleAddStaff = (values) => {
-    const { Firstname, Lastname, Password } = values;
-    const username = `${Firstname} ${Lastname}`; // Create the username
+  const handleAddStaff = async () => {
+    setIsAddingStaff(true);
   
-    // Create a staff member object
-    const staffMember = {
-      username,
-      password: Password,
-    };
+    try {
+      const staffData = {
+        ...formData,
+        Role: 'basic',
+        KitchenId: userData.Id,
+      };
   
-    // Add the staff member to the staff management array
-    setStaffManagement([...staffManagement, staffMember]);
+      const response = await AddStaff(staffData, auth);
+      console.log(response)
+      if (response.code === 200) {
+        localStorage.setItem('staffs', JSON.stringify(response.body));
+        const { FirstName, LastName, Email, Password } = formData;
+        const username = `${FirstName} ${LastName}`;
   
-    // Add an initial showPassword state for the new staff member
-    setStaffShowPasswords([...staffShowPasswords, false]);
+        const staffMember = {
+          username,
+          email: Email,
+          password: Password,
+        };
+        setStaffs(response.body)
+        setStaffManagement([...staffManagement, staffMember]);
+        message.success("New Staff Added Successfully");
+      } else if(response.message === "Staff already exist"){
+        message.error("Staff already exist");
+      }
+    } catch (error) {
+      message.error("An error occurred while adding staff. Please try again later.");
+    }
   
-    message.success("New Staff Added Successfully");
+    setIsAddingStaff(false);
     setAddStaffModalVisible(false);
-  };
-  
+  };  
 
   const togglePasswordVisibility = (index) => {
     const updatedShowPasswords = [...staffShowPasswords];
@@ -57,27 +132,42 @@ function Settings() {
 
   const handleDeleteStaff = () => {
     if (deleteStaffIndex !== null) {
-      // Create a copy of the staff management array
       const updatedStaffManagement = [...staffManagement];
       
-      // Find the index of the staff member to delete
       updatedStaffManagement.splice(deleteStaffIndex, 1);
       setStaffManagement(updatedStaffManagement);
 
-      // Close the delete confirmation modal
       setDeleteConfirmationVisible(false);
       setDeleteStaffIndex(null);
     }
   };
 
+  // const handleDeleteKitchenProfile = async () => {
+  //   const confirmation = window.confirm('Are you sure you want to delete your kitchen profile? This action cannot be undone.');
+
+  //   if (confirmation) {
+  //     try {
+  //       const payload = {
+  //         Email: userData.ManagerEmail,
+  //       };
+
+  //       await DeleteKitchen(payload, auth);
+  //       message.success('Kitchen profile deleted successfully.');
+  //     } catch (error) {
+  //       message.error('An error occurred while deleting the kitchen profile.');
+  //     }
+  //   }
+  // };
+
   return (
     <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
       <Card title="Settings" style={{ width: "60rem" }}>
         <Form
-          form={form}
           onFinish={onFinish}
           labelCol={{ span: 6 }}
           wrapperCol={{ span: 16 }}
+          encType="multipart/form-data"
+          id="uploadImage"
         >
           <div style={{ justifyContent: "space-between", alignItems: "flex-end" }}>
             <Form.Item label="Add New Staff">
@@ -103,150 +193,114 @@ function Settings() {
                 <Button
                   key="change"
                   type="primary"
-                  onClick={() => form.validateFields().then(handleAddStaff)}
+                  onClick={handleAddStaff}
+                  disabled={!isFormFilled}
                 >
-                  Add a new Staff
+                  {isAddingStaff ? "Adding Staff..." : "Add Staff"}
                 </Button>,
               ]}
             >
-              <Form form={form}>
-                <Form.Item
-                  label="Firstname"
-                  name="Firstname"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter staff firstname",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Input staff firstname" />
-                </Form.Item>
-                <Form.Item
-                  label="Lastname"
-                  name="Lastname"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter staff lastname",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Input staff lastname" />
-                </Form.Item>
-                <Form.Item
-                  label="Email"
-                  name="Email"
-                  rules={[
-                    {
-                      type: "email",
-                      message: "Invalid email address",
-                    },
-                    {
-                      required: true,
-                      message: "Please enter email",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Input email" />
-                </Form.Item>
-                <Form.Item
-                  label="Password"
-                  name="Password"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter password",
-                    },
-                  ]}
-                >
-                  <Input.Password style={{ height: '40px', width: '80%' }} />
-                </Form.Item>
-              </Form>
+              <div style={{ justifyContent: 'flex-start'}}>
+                <div style={{justifyContent: 'flex-start'}}>
+                  <label>Firstname</label>
+                  <input
+                    type="text"
+                    id="FirstName"
+                    name="FirstName"
+                    placeholder="Input staff email" 
+                    value={formData.FirstName}
+                    onChange={handleInputChange}
+                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    required
+                  />
+                </div>
+                <div style={{justifyContent: 'flex-start'}}>
+                  <label>Lastname</label>
+                  <input
+                    type="text"
+                    id="LastName"
+                    name="LastName"
+                    placeholder="Input staff Lastname"
+                    value={formData.LastName}
+                    onChange={handleInputChange}
+                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    required
+                  />
+                </div>
+                <div style={{justifyContent: 'flex-start'}}>
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    id="Email"
+                    name="Email"
+                    placeholder="Input staff email"
+                    value={formData.Email}
+                    onChange={handleInputChange}
+                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    required
+                  />
+                </div>
+                <div style={{ justifyContent: 'flex-start'}}>
+                  <label>Phone Number</label>
+                  <input
+                    type="number"
+                    id="Phone"
+                    name="Phone"
+                    placeholder="Input mobile number" 
+                    value={formData.Phone}
+                    onChange={handleInputChange}
+                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    required
+                  />
+                </div>
+                <div style={{ justifyContent: 'flex-start'}}>
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    id="Password"
+                    name="Password"
+                    placeholder="Input staff password" 
+                    value={formData.Password}
+                    onChange={handleInputChange}
+                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    required
+                  />
+                </div>
+              </div>
             </Modal>
 
-            <Form.Item label="Change Password">
-              <Button
-                type="primary"
-                shape="round"
-                icon={<LockOutlined />}
-                style={{ marginLeft: "30rem", height: '10%' }}
-                onClick={() => setModalVisible(true)}
-              >
-                Change your Password
-              </Button>
-            </Form.Item>
-
             <Form.Item label="Upload/Update Kitchen Image">
-              <Upload
-                name="kitchenImage"
-                onChange={handleFileUpload}
-              >
                 <Button
                   icon={<UploadOutlined />}
                   style={{ width: "12rem", marginLeft: "30rem" }}
+                  onClick={() => setUploadImageModalVisible(true)}
                 >
-                  Click to Upload
+                  Upload Image
                 </Button>
-              </Upload>
             </Form.Item>
           </div>
         </Form>
       </Card>
 
       <Modal
-        title="Change Password"
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setModalVisible(false)}>
-            Cancel
-          </Button>,
-          <Button key="change" type="primary" onClick={handlePasswordChange}>
-            Change Password
-          </Button>,
-        ]}
+        title="Upload Kitchen Image"
+        open={uploadImageModalVisible}
+        onOk={() => {
+          setUploadImageModalVisible(false);
+        }}
+        onCancel={() => setUploadImageModalVisible(false)}
       >
-        <Form form={form} onFinish={onFinish}>
-          <Form.Item
-            label="Email"
-            name="Email"
-            rules={[
-              {
-                required: true,
-                message: "Please enter your email",
-              },
-            ]}
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <input type="file" style={{display: 'flex', marginLeft: '35%'}}/>
+          <Button
+            type="primary"
+            style={{ marginLeft: "1rem" }}
+            onClick={handleUpload}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="OTP"
-            name="OTP"
-            rules={[
-              {
-                required: true,
-                message: "Please enter the OTP",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="New Password"
-            name="NewPassword"
-            rules={[
-              {
-                required: true,
-                message: "Please enter your new password",
-              },
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-        </Form>
+            Upload Image
+          </Button>
+        </div>
       </Modal>
-
 
       {/* Staff Managment Side */}
       <Modal
@@ -264,29 +318,43 @@ function Settings() {
           <ul>
           {staffManagement.map((staff, index) => (
             <li key={index}>
-              {staff.username} - {staffShowPasswords[index] ? staff.password : "******"}{" "}
-              <Button
-                icon={<EyeOutlined />}
-                onClick={() => togglePasswordVisibility(index)}
-                style={{ marginLeft: "1rem", marginTop: '2%' }}
-              >
-                {staffShowPasswords[index] ? "Hide" : "Show"} Password
-              </Button>{" "}
-              <Button
-                icon={<DeleteOutlined />}
-                onClick={() => {
-                  setDeleteStaffIndex(index);
-                  setDeleteConfirmationVisible(true);
-                }}
-                style={{ marginLeft: "1rem" }}
-              >
-                Delete Staff
-              </Button>
-            </li>
+            {staff.username} -{" "}
+            {staffShowPasswords[index]
+              ? staff.password
+              : "******"}{" "}
+            <Button
+              icon={<EyeOutlined />}
+              onClick={() => togglePasswordVisibility(index)}
+              style={{ marginLeft: "1rem", marginTop: "2%" }}
+            >
+              {staffShowPasswords[index] ? "Hide" : "Show"} Password
+            </Button>{" "}
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                setDeleteStaffIndex(index);
+                setDeleteConfirmationVisible(true);
+              }}
+              style={{ marginLeft: "1rem" }}
+            >
+              Delete Staff
+            </Button>
+          </li>
           ))}
 
           </ul>
         </Card>
+        {/* <div style={{ marginTop: "2rem" }}>
+          <Card title="Danger Zone" style={{ width: "60rem", backgroundColor: '#ff0000' }}>
+            <Button
+              type="danger"
+              danger
+              onClick={handleDeleteKitchenProfile}
+            >
+              Delete Kitchen Profile
+            </Button>
+          </Card>
+        </div> */}
       </div>
     </div>
   );

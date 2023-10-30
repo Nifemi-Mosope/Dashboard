@@ -26,7 +26,7 @@ function Footer() {
             <FacebookLogo style={{ ...iconStyle, color: '#1877F2' }} weight='fill' />
           </a>
           <a
-            href="https://api.whatsapp.com/send?phone=your-phone-number"
+            href="https://api.whatsapp.com/send?09134228578"
             target="_blank"
             rel="noopener noreferrer"
             className="social-icon"
@@ -34,7 +34,7 @@ function Footer() {
             <WhatsappLogo style={{ ...iconStyle, color: '#25D366' }} weight='fill' />
           </a>
           <a
-            href="https://www.instagram.com/your-instagram-profile-url"
+            href="https://www.instagram.com/quickeeapp"
             target="_blank"
             rel="noopener noreferrer"
             className="social-icon"

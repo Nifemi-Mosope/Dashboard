@@ -2,14 +2,69 @@ import React, { useState, useEffect } from 'react';
 import { Card, Descriptions, Divider, List, Button, Modal, notification, Tag } from 'antd';
 import { useMenuContext } from './MenuContext';
 import moment from 'moment';
+import { GetKitchenOrders } from '../Features/KitchenSlice';
 
 const Orders = () => {
   const [displayOrder, setDisplayOrder] = useState({});
   const [acceptClicked, setAcceptClicked] = useState(false);
-  const { orders, updateOrderStatus } = useMenuContext();
   const [declineModalVisible, setDeclineModalVisible] = useState(false);
   const [foodAttended, setFoodAttended] = useState(false);
   const [foodDeclined, setFoodDeclined] = useState(false);
+  const [orderHistory, setOrderHistory] = useState([]);
+  const { userData, auth, setStaffs, setImage } = useMenuContext();
+  const [orders, setOrders] = useState([]);
+  
+  useEffect(() => {
+    const storedOrders = localStorage.getItem('orders');
+    if (storedOrders) {
+      setOrders(JSON.parse(storedOrders));
+    }
+  }, []);
+
+  const saveOrdersToLocalStorage = (orders) => {
+    localStorage.setItem('orders', JSON.stringify(orders));
+  };
+
+  const fetchOrders = async () => {
+    const payload = {
+      Email: userData.KitchenEmail
+    }
+    try {
+      const fetchedOrders = await GetKitchenOrders(payload, auth);
+      console.log(fetchedOrders);
+      setOrders(fetchedOrders);
+      saveOrdersToLocalStorage(fetchedOrders);
+    } catch (error) {
+      console.error('Failed to fetch orders', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const updateOrderStatus = (orderId, status) => {
+    // Find the order to update
+    const updatedOrders = orders.map((order) => {
+      if (order.orderId === orderId) {
+        return { ...order, status };
+      }
+      return order;
+    });
+  
+    setOrders(updatedOrders);
+  
+    if (status === 'Attended' || status === 'Cancelled') {
+      // Add the order to orderHistory
+      const orderToMove = orders.find((order) => order.orderId === orderId);
+      setOrderHistory([...orderHistory, orderToMove]);
+    }
+  };
+  
+
+  const addOrder = (newOrder) => {
+    setOrders([...orders, newOrder]);
+  };
 
   useEffect(() => {
     if (orders.length > 0) {

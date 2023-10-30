@@ -9,41 +9,27 @@ export function useMenuContext() {
 export function MenuProvider({ children }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [orderHistory, setOrderHistory] = useState([]);
-  const [orders, setOrders] = useState([
-    {
-      orderId: "F23457",
-      customer: 'Oluwanifemi Ojinni',
-      description: 'How is the order going? send me a mail and we will get your problem resolved',
-      dishes: [
-        {
-          dish: 'Jollof Rice',
-          scoops: 2,
-          price: 300,
-        },
-        {
-          dish: 'Pepper Soup',
-          scoops: 1,
-          price: 1500,
-        }
-      ],
-    },
-    {
-      orderId: 2,
-      customer: 'Customer 2',
-      description: 'Order 2 description',
-      dishes: [
-        {
-          dish: 'Fried Rice',
-          scoops: 1,
-          price: 1800,
-        },
-      ],
-    },
-  ]);
 
-  const addOrder = (newOrder) => {
-    setOrders([...orders, newOrder]);
-  };
+  const storedUserData = localStorage.getItem('userData');
+  const initialUserData = storedUserData ? JSON.parse(storedUserData) : null;
+
+  const storedAuthData = localStorage.getItem('auth');
+  const initialAuth = storedAuthData ? JSON.parse(storedAuthData) : null;
+
+  const storedMenus = localStorage.getItem('menus');
+  const initialMenus = storedMenus ? JSON.parse(storedMenus) : null;
+
+  const storedStaff = localStorage.getItem('staffs');
+  const initialStaff = storedStaff ? JSON.parse(storedStaff) : null;
+
+  const storedImage = localStorage.getItem('Image');
+  const initialImage = storedImage ? JSON.parse(storedImage) : null;
+
+  const [userData, setUserData] = useState(initialUserData);
+  const [auth, setAuth] = useState(initialAuth);
+  const [menus, setMenus] = useState(initialMenus);
+  const [staffs, setStaffs] = useState(initialStaff); 
+  const [image, setImage] = useState(initialImage);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -53,26 +39,12 @@ export function MenuProvider({ children }) {
     setIsModalVisible(false);
   };
 
-  const updateOrderStatus = (orderId, status) => {
-    // Find the order to update
-    const updatedOrders = orders.map((order) => {
-      if (order.orderId === orderId) {
-        return { ...order, status };
-      }
-      return order;
-    });
-
-    setOrders(updatedOrders);
-
-    // Move to order history if the status is "attended" or "cancelled"
-    if (status === 'Attended' || status === 'Cancelled') {
-      const orderToMove = orders.find((order) => order.orderId === orderId);
-      setOrderHistory([...orderHistory, orderToMove]);
-    }
+  const setUser = (body) => {
+    setUserData(body);
   };
 
   return (
-    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orders, addOrder, orderHistory, updateOrderStatus }}>
+    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage }}>
       {children}
     </MenuContext.Provider>
   );

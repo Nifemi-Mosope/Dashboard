@@ -7,36 +7,10 @@ function History() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {orderHistory} = useMenuContext();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(2);
 
   const orders = [
-    {
-      "orderID": "F8762",
-      "foodDetails": [
-        {
-          "dish": "Jollof Rice",
-          "scoops": 2,
-          "price": 200,
-        },
-        {
-          "dish": "Fried Rice",
-          "scoops": 1,
-          "price": 150,
-        },
-        {
-          "dish": "Yoghurt",
-          "scoops": 3,
-          "price": 50,
-        },
-        {
-          "dish": "Beans",
-          "scoops": 2,
-          "price": 100,
-        },
-      ],
-      "description": "Put the Beans in the nylon",
-      "status": "Attended",
-      "date": "Wed, 18th December 2023"
-    },
     {
       "orderID": "R5678",
       "foodDetails": [
@@ -92,8 +66,45 @@ function History() {
       "description": "Put the Beans in the nylon",
       "status": "Cancelled",
       "date": "Wed, 18th December 2023"
+    },
+    {
+      "orderID": "U8985",
+      "foodDetails": [
+        {
+          "dish": "Jollof Rice",
+          "scoops": 2,
+          "price": 200,
+        },
+        {
+          "dish": "Fried Rice",
+          "scoops": 1,
+          "price": 150,
+        },
+        {
+          "dish": "Yoghurt",
+          "scoops": 3,
+          "price": 50,
+        },
+        {
+          "dish": "Beans",
+          "scoops": 2,
+          "price": 100,
+        },
+      ],
+      "description": "Put the Beans in the nylon",
+      "status": "Cancelled",
+      "date": "Wed, 18th December 2023"
     }
   ];
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  const ordersToDisplay = orders.slice(startIndex, endIndex)
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   const renderOrderStatus = (orderStatus) => {
     const color = orderStatus === 'Attended' ? 'green' : 'red';
@@ -175,6 +186,12 @@ function History() {
           onRow={(record) => ({
             onClick: () => handleOrderClick(record),
           })}
+          pagination={{
+            current: currentPage,
+            pageSize: itemsPerPage,
+            total: orders.length,
+            onChange: handlePageChange,
+          }}
         />
       </Card>
 
@@ -184,30 +201,31 @@ function History() {
         onCancel={handleModalClose}
         footer={null}
       >
-            {selectedOrder && (
-                <div>
-                <p>Order ID: {selectedOrder.orderID}</p>
-                <p>Food Details:</p>
-                <ul>
-                    {selectedOrder.foodDetails.map((foodItem, index) => (
-                    <li key={index}>
-                        {foodItem.dish} x{foodItem.scoops} (₦{foodItem.price.toFixed(2)})
-                    </li>
-                    ))}
-                </ul>
-                <p>Status: {renderOrderStatus(selectedOrder.status)}</p>
-                <p>Total Price: ₦
-                    {(
-                    selectedOrder.foodDetails.reduce(
-                        (total, foodItem) => total + foodItem.price * foodItem.scoops,
-                        0
-                    )
-                    ).toFixed(2)}
-                </p>
-                <p>Date: {selectedOrder.date}</p>
-                </div>
-            )}
-        </Modal>
+        {selectedOrder && (
+          <div>
+            <p>Order ID: {selectedOrder.orderID}</p>
+            <p>Description: {selectedOrder.description}</p>
+            <p>Food Details:</p>
+            <ul>
+              {selectedOrder.foodDetails.map((foodItem, index) => (
+                <li key={index}>
+                  {foodItem.dish} x{foodItem.scoops} (₦{foodItem.price.toFixed(2)})
+                </li>
+              ))}
+            </ul>
+            <p>Status: {renderOrderStatus(selectedOrder.status)}</p>
+            <p>Total Price: ₦
+              {(
+                selectedOrder.foodDetails.reduce(
+                  (total, foodItem) => total + foodItem.price * foodItem.scoops,
+                  0
+                )
+              ).toFixed(2)}
+            </p>
+            <p>Date: {selectedOrder.date}</p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
