@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
 import { UploadOutlined, PlusOutlined, LockOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useMenuContext } from "./MenuContext";
-import { AddStaff, UploadImage } from "../Features/KitchenSlice";
+import { AddStaff, UploadImage, DeleteStaff } from "../Features/KitchenSlice";
 
 function Settings() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -11,7 +11,7 @@ function Settings() {
   const [deleteStaffIndex, setDeleteStaffIndex] = useState(null);
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const [staffShowPasswords, setStaffShowPasswords] = useState([]);
-  const { userData, auth, setStaffs, setImage } = useMenuContext();
+  const { userData, auth, setStaffs, setImage, staffs } = useMenuContext();
   const [formData, setFormData] = useState({
     FirstName: '',
     KitchenId: userData.Id,
@@ -130,7 +130,11 @@ function Settings() {
     setStaffShowPasswords(updatedShowPasswords);
   };
 
-  const handleDeleteStaff = () => {
+  const handleDeleteStaff = async () => {
+    const payload = {
+      Id: staffs.Id
+    }
+    const response = await DeleteStaff(payload, auth);
     if (deleteStaffIndex !== null) {
       const updatedStaffManagement = [...staffManagement];
       
@@ -141,23 +145,6 @@ function Settings() {
       setDeleteStaffIndex(null);
     }
   };
-
-  // const handleDeleteKitchenProfile = async () => {
-  //   const confirmation = window.confirm('Are you sure you want to delete your kitchen profile? This action cannot be undone.');
-
-  //   if (confirmation) {
-  //     try {
-  //       const payload = {
-  //         Email: userData.ManagerEmail,
-  //       };
-
-  //       await DeleteKitchen(payload, auth);
-  //       message.success('Kitchen profile deleted successfully.');
-  //     } catch (error) {
-  //       message.error('An error occurred while deleting the kitchen profile.');
-  //     }
-  //   }
-  // };
 
   return (
     <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>

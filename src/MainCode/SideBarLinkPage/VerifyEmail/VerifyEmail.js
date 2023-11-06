@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import '../../SignUpScreen/signup.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { VerifyEmail, ResendVerifyEmail } from '../../Features/KitchenSlice';
-import { notification } from 'antd';
+import { message, notification } from 'antd';
 
 function Verifymail() {
   const [formData, setFormData] = useState({
@@ -10,8 +10,11 @@ function Verifymail() {
     EmailOTP: '',
   });
 
-  const [showResend, setShowResend] = useState(false);
   const [resendEmail, setResendEmail] = useState('');
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const showResend = queryParams.get('showResend') === 'true';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -49,8 +52,7 @@ function Verifymail() {
           description: 'Check your mail for the correct OTP and try again',
         });
       } else if (response.message === "Expired OTP") {
-        // Handle the expired OTP by showing the "Resend Email" option
-        setShowResend(true);
+        message.error('Expired OTP')
         setResendEmail(formData.Email);
       } else {
         notification.error({
@@ -69,14 +71,17 @@ function Verifymail() {
 
   const handleResendEmail = async () => {
     try {
-      const response = await ResendVerifyEmail(resendEmail);
+      const payload = {
+        Email: formData.Email,
+      };
+      
+      const response = await ResendVerifyEmail(payload);
       console.log(response)
       if (response.code === 200) {
         notification.success({
           message: 'Email Resent',
           description: 'Email verification link has been resent. Check your email.',
         });
-        setShowResend(false);
       } else {
         notification.error({
           message: 'Resend Email Failed',
@@ -102,39 +107,62 @@ function Verifymail() {
           <h2 style={{ textAlign: 'center', marginTop: '0%', fontFamily: 'sans-serif' }}>
             {showResend ? 'Resend Verify Email' : 'Verify your Kitchen Email'}
           </h2>
-          <form onSubmit={showResend ? handleResendEmail : handleSubmit}>
-            <div className="input-group">
-              <label htmlFor="Email" style={{ fontFamily: 'sans-serif' }}>Email</label>
-              <input
-                type="email"
-                id="Email"
-                name="Email"
-                placeholder="Enter your email"
-                value={formData.Email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            {showResend ? null : (
+
+          {showResend ? (
+            <form onSubmit={handleResendEmail}>
               <div className="input-group">
-                <label htmlFor="EmailOTP" style={{ fontFamily: 'sans-serif' }}>OTP</label>
+                <label htmlFor="Email" style={{ fontFamily: 'sans-serif' }}>Email</label>
                 <input
-                  type='number'
-                  id="EmailOTP"
-                  name="EmailOTP"
-                  placeholder="Enter your OTP"
-                  value={formData.EmailOTP}
+                  type="email"
+                  id="Email"
+                  name="Email"
+                  placeholder="Enter your email"
+                  value={formData.Email}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-            )}
-            <div className="button-container">
-              <button type="submit" className="submit-button">
-                {showResend ? 'Resend Email' : 'Verify'}
-              </button>
-            </div>
-          </form>
+              <div className="button-container">
+                <button type="submit" className="submit-button">
+                  Resend Email
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label htmlFor="Email" style={{ fontFamily: 'sans-serif' }}>Email</label>
+                <input
+                  type="email"
+                  id="Email"
+                  name= "Email"
+                  placeholder="Enter your email"
+                  value={formData.Email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              {showResend ? null : (
+                <div className="input-group">
+                  <label htmlFor="EmailOTP" style={{ fontFamily: 'sans-serif' }}>OTP</label>
+                  <input
+                    type='number'
+                    id="EmailOTP"
+                    name="EmailOTP"
+                    placeholder="Enter your OTP"
+                    value={formData.EmailOTP}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              )}
+              <div className="button-container">
+                <button type="submit" className="submit-button">
+                  {showResend ? 'Resend Email' : 'Verify'}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>

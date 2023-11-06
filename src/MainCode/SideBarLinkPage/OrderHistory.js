@@ -1,106 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Table, Tag, Input, Modal } from 'antd';
 import { useMenuContext } from './MenuContext';
+import { GetKitchenOrders } from '../Features/KitchenSlice';
 
 function History() {
   const [searchText, setSearchText] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const {orderHistory} = useMenuContext();
+  const { userData, auth } = useMenuContext();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(2);
+  const [kitchenOrders, setKitchenOrders] = useState([]);
+  const [filteredKitchenOrders, setFilteredKitchenOrders] = useState([]);
 
-  const orders = [
-    {
-      "orderID": "R5678",
-      "foodDetails": [
-        {
-          "dish": "Jollof Rice",
-          "scoops": 2,
-          "price": 200,
-        },
-        {
-          "dish": "Fried Rice",
-          "scoops": 1,
-          "price": 150,
-        },
-        {
-          "dish": "Yoghurt",
-          "scoops": 3,
-          "price": 50,
-        },
-        {
-          "dish": "Beans",
-          "scoops": 2,
-          "price": 100,
-        },
-      ],
-      "description": "Nil",
-      "status": "Cancelled",
-      "date": "Wed, 18th December 2023"
-    },
-    {
-      "orderID": "Y8585",
-      "foodDetails": [
-        {
-          "dish": "Jollof Rice",
-          "scoops": 2,
-          "price": 200,
-        },
-        {
-          "dish": "Fried Rice",
-          "scoops": 1,
-          "price": 150,
-        },
-        {
-          "dish": "Yoghurt",
-          "scoops": 3,
-          "price": 50,
-        },
-        {
-          "dish": "Beans",
-          "scoops": 2,
-          "price": 100,
-        },
-      ],
-      "description": "Put the Beans in the nylon",
-      "status": "Cancelled",
-      "date": "Wed, 18th December 2023"
-    },
-    {
-      "orderID": "U8985",
-      "foodDetails": [
-        {
-          "dish": "Jollof Rice",
-          "scoops": 2,
-          "price": 200,
-        },
-        {
-          "dish": "Fried Rice",
-          "scoops": 1,
-          "price": 150,
-        },
-        {
-          "dish": "Yoghurt",
-          "scoops": 3,
-          "price": 50,
-        },
-        {
-          "dish": "Beans",
-          "scoops": 2,
-          "price": 100,
-        },
-      ],
-      "description": "Put the Beans in the nylon",
-      "status": "Cancelled",
-      "date": "Wed, 18th December 2023"
+  const fetchKitchenOrders = async () => {
+    try {
+      const payload = {
+        Email: userData.KitchenEmail,
+      };
+      const response = await GetKitchenOrders(payload, auth);
+      if (response.code === 200) {
+        setKitchenOrders(response.body.Orders);
+        setFilteredKitchenOrders(response.body.Orders);
+      }
+    } catch (error) {
+      console.error('Failed to fetch kitchen orders', error);
     }
-  ];
+  };
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+  useEffect(() => {
+    fetchKitchenOrders();
+  }, [userData.KitchenEmail, auth]);
 
-  const ordersToDisplay = orders.slice(startIndex, endIndex)
+  const handleSearch = () => {
+    const lowerSearchText = searchText.toLowerCase();
+    const filtered = kitchenOrders.filter(order =>
+      order.TrxRef.toLowerCase().includes(lowerSearchText)
+    );
+    setFilteredKitchenOrders(filtered);
+  };
+
+  useEffect(() => {
+    if (searchText) {
+      handleSearch();
+    } else {
+      setFilteredKitchenOrders(kitchenOrders);
+    }
+  }, [searchText, kitchenOrders]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -111,21 +57,26 @@ function History() {
     return <Tag color={color}>{orderStatus}</Tag>;
   };
 
+  const renderOrderDate = (date) => {
+    const orderDate = new Date(date);
+    return orderDate.toDateString(); // Modify the format as needed
+  }
+
   const tableColumns = [
     {
       title: 'Order ID',
-      dataIndex: 'orderID',
-      key: 'orderID'
+      dataIndex: 'TrxRef',
+      key: 'TrxRef',
     },
     {
       title: 'Food Details',
-      dataIndex: 'foodDetails',
-      key: 'foodDetails',
+      dataIndex: 'Items',
+      key: 'Items',
       render: (foodDetails) => (
         <ul>
-          {foodDetails.map((foodItem, index) => (
+          {foodDetails && foodDetails.map((foodItem, index) => (
             <li key={index}>
-              {foodItem.dish} x{foodItem.scoops} (₦{foodItem.price.toFixed(2)})
+              {foodItem.Name} x{foodItem.Scoops} (₦{foodItem.Price})
             </li>
           ))}
         </ul>
@@ -133,32 +84,30 @@ function History() {
     },
     {
       title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      dataIndex: 'Description',
+      key: 'Description',
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: renderOrderStatus
+      render: renderOrderStatus,
     },
     {
       title: 'Date',
-      dataIndex: 'date',
-      key: 'date'
+      dataIndex: 'CreatedAt',
+      key: 'CreatedAt',
+      render: (text, record) => renderOrderDate(text),
     },
     {
       title: 'Total Price',
-      key: 'totalPrice',
+      dataIndex: 'TotalAmount',
+      key: 'TotalAmount',
       render: (text, record) => (
-        `₦${record.foodDetails.reduce((total, foodItem) => total + (foodItem.price * foodItem.scoops), 0).toFixed(2)}`
-      ),
+        `₦${text}`
+      )
     },
   ];
-
-  const filteredOrders = orders.filter((order) =>
-    order.orderID.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
@@ -175,54 +124,48 @@ function History() {
         placeholder="Search Order ID"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
+        onSearch={handleSearch}
         style={{ width: '20rem', marginLeft: '87%', marginTop: '1rem' }}
         allowClear
       />
       <Card title={"Order History"} style={{ margin: 20, width: '120%' }}>
         <Table
-          dataSource={filteredOrders}
+          dataSource={filteredKitchenOrders}
           columns={tableColumns}
-          rowKey={"orderID"}
+          rowKey={"TrxRef"}
           onRow={(record) => ({
             onClick: () => handleOrderClick(record),
           })}
           pagination={{
             current: currentPage,
             pageSize: itemsPerPage,
-            total: orders.length,
+            total: filteredKitchenOrders.length,
             onChange: handlePageChange,
           }}
         />
       </Card>
 
       <Modal
-        title={`Order Details - ${selectedOrder ? selectedOrder.orderID : ''}`}
+        title={`Order Details - ${selectedOrder ? selectedOrder.TrxRef : ''}`}
         open={isModalVisible}
         onCancel={handleModalClose}
         footer={null}
       >
         {selectedOrder && (
           <div>
-            <p>Order ID: {selectedOrder.orderID}</p>
-            <p>Description: {selectedOrder.description}</p>
+            <p>Order ID: {selectedOrder.TrxRef}</p>
+            <p>Description: {selectedOrder.Description}</p>
             <p>Food Details:</p>
             <ul>
-              {selectedOrder.foodDetails.map((foodItem, index) => (
+              {selectedOrder.Items.map((foodItem, index) => (
                 <li key={index}>
-                  {foodItem.dish} x{foodItem.scoops} (₦{foodItem.price.toFixed(2)})
+                  {foodItem.Name} x{foodItem.Scoops} (₦{foodItem.Price})
                 </li>
               ))}
             </ul>
             <p>Status: {renderOrderStatus(selectedOrder.status)}</p>
-            <p>Total Price: ₦
-              {(
-                selectedOrder.foodDetails.reduce(
-                  (total, foodItem) => total + foodItem.price * foodItem.scoops,
-                  0
-                )
-              ).toFixed(2)}
-            </p>
-            <p>Date: {selectedOrder.date}</p>
+            <p>Total Price: ₦{selectedOrder.TotalAmount}</p>
+            <p>Date: {selectedOrder.CreatedAt}</p>
           </div>
         )}
       </Modal>

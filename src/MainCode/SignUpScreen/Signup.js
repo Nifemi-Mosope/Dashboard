@@ -52,7 +52,7 @@ function Signup() {
         ...formData,
         ShouldProceed: false,
       };
-
+      console.log('ShouldProceedFalse ' ,payload)
       try {
         const response = await ValidateBank(payload);
         if (response.status === true) {
@@ -175,7 +175,7 @@ function Signup() {
       ...formData,
       ShouldProceed: true,
     };
-
+    console.log('ShouldProceedTrue ' ,payload)
     try {
       const response = await ValidateBank(payload);
       console.log(response);

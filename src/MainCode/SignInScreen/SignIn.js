@@ -54,9 +54,10 @@ function SignIn() {
         });
       } else if (response.message === "Unverified email"){
         notification.error({
-          message: 'User not found',
-          description: 'This User is not found. Check your login credentials again',
+          message: 'Unverified Email',
+          description: 'This User is not yet verified',
         });
+        navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
       }
     } catch (error) {
       // console.error(error);

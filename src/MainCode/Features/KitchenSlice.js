@@ -61,12 +61,13 @@ export async function VerifyEmail(data){
 
 export async function ResendVerifyEmail(data) {
     try {
-        const path = `${BASE_PATH}/ResendVerifyEmail?Email=${data}`;
+        const path = BASE_PATH + `/ResendVerifyEmail?Email=${data.Email}`;
         const response = await axios.get(path, data);
         console.log(response);
-        return response;
+        return response.data;
       } catch (error) {
-        console.log(error);
+        console.log(error?.response?.data)
+        return error?.response?.data
       }
 }
 
@@ -90,6 +91,7 @@ export async function ValidateBank(data) {
         };
 
         const path = BASE_PATH + `/ValidateKitchenBank?Email=${data.KitchenEmail}`;
+        console.log(data.KitchenEmail)
         const response = await axios.post(path, payload);
         return response.data;
     } catch (error) {
@@ -97,8 +99,6 @@ export async function ValidateBank(data) {
         throw error;
     }
 }
-
-
 
 export async function Forgotpassword(data) {
     try {
@@ -129,9 +129,12 @@ export async function ResetPassword(data) {
 }
 
 export async function DeleteStaff(data) {
+    const payload = {
+        Id: data.Id 
+    }
     try {
-        const path = `${BASE_PATH}/DeleteStaff?Email=${data}`;
-        const response = await axios.delete(path, data);
+        const path = `${BASE_PATH}/DeleteStaff?Email=${data.Id}`;
+        const response = await axios.delete(path, payload);
         console.log(response);
         return response;
     } catch (error) {
@@ -182,7 +185,7 @@ export async function DeleteKitchen(data, auth) {
     try {
       const path = BASE_PATH + `/Delete?Email=${data.Email}`;
       const response = await axiosWithAuth(auth.accesstoken).delete(path);
-      console.log(response)
+    //   console.log(response)
       return response.data;
     } catch (error) {
         console.log(error?.response?.data)
@@ -196,8 +199,10 @@ export async function GetReviews(userData, auth) {
         if (userData && userData.Id) {
         const path = BASE_PATH + `/GetReviewsByKitchenId?KitchenId=${userData.Id}`;
         const response = await axiosWithAuth(auth.accesstoken).get(path);
-        // console.log(response);
-        return response.data;
+        if(response){
+            console.log('Reviews data' , response.data);
+            return response.data;
+        }
       } else {
         console.error("Invalid userData object passed to GetReviews function");
         return null;
@@ -208,14 +213,14 @@ export async function GetReviews(userData, auth) {
     }
 }
 
-export async function UpdateMenu(data, auth, menus){
+export async function UpdateMenu(data, auth){
     try {
         const payload = {
             TotalQuantity: data.TotalQuantity,
             Price: data.Price,
             Status: data.Status
         }
-        const path = BASE_PATH + `/UpdateMenu?MenuId=${menus.Id}`
+        const path = BASE_PATH + `/UpdateMenu?MenuId=${data.MenusId}`
         const response = await axiosWithAuth(auth.accesstoken).put(path, payload)
         console.log(response)
         return response.data
@@ -262,12 +267,10 @@ export async function AddStaff(data, auth) {
 
 export async function GetKitchenOrders(data, auth) {
     try {
-        const payload = {
-            Email: data.Email
-        }
+        // console.log(data, ' Auth ', auth)
         const path = BASE_PATH + `/GetKitchenOrders?Email=${data.Email}`
-        const response = await axiosWithAuth(auth.accesstoken).get(path, payload)
-        console.log(response)
+        const response = await axiosWithAuth(auth.accesstoken).get(path)
+        // console.log( 'Response-1: ' ,response)
         return response.data
     } catch (error) {
         console.log(error?.response?.data);
@@ -289,4 +292,22 @@ export async function UploadImage(data) {
     //   console.log(error?.response?.data);
       return error?.response?.data;
     }
-  }
+}
+
+export async function SendNotification(data, auth) {
+    try {
+        const payload = {
+            KitchenId: data.KitchenId,
+            Title: data.Title,
+            UserId: data.UserId,
+            Message: data.Message,
+        }
+        const path = BASE_PATH + "/SendNotification"
+        const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
+        console.log(response)
+        return response.data
+    } catch (error) {
+        console.log(error?.response?.data);
+        return error?.response?.data;
+    }
+}

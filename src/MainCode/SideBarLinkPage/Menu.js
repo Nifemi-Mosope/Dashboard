@@ -27,6 +27,11 @@ const MenuScreen = () => {
   });
   const [loadingMenus, setLoadingMenus] = useState(true)
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
+
+  // console.log(menus)
+
   const fetchMenus = async () => {
     try {
       setLoadingMenus(true);
@@ -44,6 +49,13 @@ const MenuScreen = () => {
     }
   };
 
+  //Items to show in a table not to cause TMI
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   useEffect(() => {
     fetchMenus();
   }, [userData.Id, auth]);
@@ -55,61 +67,63 @@ const MenuScreen = () => {
         ...formData,
         Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
       };
-
+  
       const response = await CreateMenu(newValues, auth);
-      // console.log(response);
-
+  
       if (response.code === 200) {
         if (editItem) {
-          const updatedMenuItems = Array.isArray(menuItems)
-            ? menuItems.map((item) => {
-                if (item.key === editItem.key) {
-                  return {
-                    ...item,
-                    Price: values.Price,
-                    TotalQuantity: values.TotalQuantity,
-                    Status: values.TotalQuantity > 0 ? 'available' : 'finished',
-                  };
-                }
-                return item;
-              })
-            : [];
+          const updatedMenuItems = menuItems.map((item) => {
+            if (item.key === editItem.key) {
+              return {
+                ...item,
+                Price: values.Price,
+                TotalQuantity: values.TotalQuantity,
+                Status: values.TotalQuantity > 0 ? 'available' : 'finished',
+              };
+            }
+            return item;
+          });
+  
+          // Update local storage with the entire updated array
+          localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
+  
           setMenuItems(updatedMenuItems);
           setEditItem(null);
         } else {
-          const newMenuItem = Array.isArray(menuItems)
-            ? {
-                key: response.body.Id,
-                ...formData,
-                Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
-              }
-            : {};
-          setMenuItems(Array.isArray(menuItems) ? [...menuItems, newMenuItem] : [newMenuItem]);
+          const newMenuItem = {
+            key: response.body.Id,
+            ...formData,
+            Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
+          };
+  
+          const updatedMenuItems = menuItems.concat(newMenuItem); // Concatenate the new item
+  
+          // Update local storage with the entire updated array
+          localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
+  
+          setMenuItems(updatedMenuItems);
           message.success('Menu item created successfully.');
-          console.log(response)
+          console.log(response);
         }
         fetchMenus();
         closeModal();
-        setMenus(response.body);
-        localStorage.setItem('menus', JSON.stringify(response.body));
       } else {
         setLoading(false);
         message.error('Failed to create menu');
       }
     } catch (error) {
-      // console.log(error);
+      console.error('Internal Server Error', error);
       message.error('Internal Server Error', error);
     } finally {
       setLoading(false);
     }
-  }; 
-       
-
+  };
+  
+  
   const handleEdit = (record) => {
     setEditItem(record);
     setEditModalVisible(true);
   };
-  const menuId = menus ? menus.Id : null;
 
   const handleDelete = async (record) => {
     Modal.confirm({
@@ -123,69 +137,92 @@ const MenuScreen = () => {
       onOk: async () => {
         try {
           const response = await DeleteMenu(auth, record);
-          console.log(response)
-          if (response.message === `FoodMenu with id ${menuId} has been deleted!`) {
+          console.log(response);
+          if (response.message === `FoodMenu with id ${MenuId} has been deleted!`) {
             const updatedMenuItems = menuItems.filter((item) => item.key !== record.key);
             setMenuItems(updatedMenuItems);
   
-            const updatedMenus = menus.filter((menu) => menu.Id !== record.key);
+            const updatedMenus = menus.filter((menus) => menus !== record.key);
             setMenus(updatedMenus);
   
-            localStorage.setItem('menus', JSON.stringify(updatedMenus));
+            localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
   
             message.success('Menu item deleted successfully');
+            if (updatedMenuItems.length === 0) {
+              setMenuItems([]);
+            }
+            clearLocalStorage();
           }
-          fetchMenus()
+          fetchMenus();
         } catch (error) {
           console.error(error);
         }
       },
     });
-  };  
-    
-           
+  };
+
+  console.log('Okay' , menus)
+  const menusData = menus || [];
+
+  // Access properties of menusData safely
+  const MenuId = menusData.Id; // Access the Id property
+
+  console.log('This is me ', MenuId);
+  console.log(menusData)
+       
   const handleEditFormSubmit = async (values) => {
     setLoading(true);
     try {
-      const newValues = {
+      const payload = {
         TotalQuantity: values.TotalQuantity,
         Price: values.Price,
         Status: values.TotalQuantity > 0 ? 'available' : 'finished',
+        MenusId: MenuId,
       };
   
-      const response = await UpdateMenu(newValues, auth, menus);
-      if (response.code === 200) {
-        const updatedMenuItems = menuItems.map((item) => {
-          if (item.key === menus.key) {
-            return {
-              ...item,
-              Price: values.Price,
-              TotalQuantity: values.TotalQuantity,
-              Status: values.TotalQuantity > 0 ? 'available' : 'finished',
-            };
-          }
-          return item;
-        });
-        setMenuItems(updatedMenuItems);
-        message.success('Menu item updated successfully.');
+      const response = await UpdateMenu(payload, auth);
   
-        setMenus(response.body);
-        localStorage.setItem('menus', JSON.stringify(response.body));
+      if (response) {
+        if (response.code === 200) {
+          const updatedMenuItems = menuItems.map((item) => {
+            if (item.key === MenuId) {
+              return {
+                ...item,
+                Price: values.Price,
+                TotalQuantity: values.TotalQuantity,
+                Status: values.TotalQuantity > 0 ? 'available' : 'finished',
+              };
+            }
+            return item;
+          });
+  
+          // Update local storage with the entire updated array
+          localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
+  
+          setMenuItems(updatedMenuItems);
+          message.success('Menu item updated successfully');
+  
+          setMenus(response.body);
+          fetchMenus();
+        } else {
+          console.error('Failed to update menu item');
+        }
       } else {
-        console.error('Failed to update menu item');
+        console.error('Response is undefined or null.');
       }
     } catch (error) {
       console.error(error);
       message.error('Internal Server Error', error);
     } finally {
       setLoading(false);
-    };
+      setEditModalVisible(false);
+    }
   };
   
 
   const filteredMenuItems = menuItems ? menuItems.filter((item) =>
-    item.FoodName && item.FoodName.toLowerCase().includes(searchText.toLowerCase())
-  ) : [];
+  item.FoodName && item.FoodName.toLowerCase().includes(searchText.toLowerCase())
+) : [];
 
 
 const handleInputChange = (e) => {
@@ -194,6 +231,10 @@ const handleInputChange = (e) => {
     ...formData,
     [name]: value,
   });
+};
+
+const clearLocalStorage = () => {
+  localStorage.removeItem('menus');
 };
 
   return (
@@ -212,7 +253,16 @@ const handleInputChange = (e) => {
           </Button>
         </div>
       </div>
-      <Table dataSource={filteredMenuItems} style={{ width: '60rem', marginLeft: '5rem' }}>
+      <Table 
+      dataSource={filteredMenuItems} 
+      style={{ width: '60rem', marginLeft: '5rem' }}
+      pagination={{
+        current: currentPage,
+        pageSize: itemsPerPage,
+        total: menuItems ? menuItems.length : 0,
+        onChange: handlePageChange,
+      }}      
+      >
         <Column title="Food Name" dataIndex="FoodName" key="FoodName" />
         <Column title="Food Category" dataIndex="Category" key="Category" />
         <Column title="Food Price (Naira)" dataIndex="Price" key="Price" />
@@ -238,7 +288,9 @@ const handleInputChange = (e) => {
               <Button type="primary" onClick={() => handleEdit(record)}>
                 Edit
               </Button>
-              <Button type="danger" onClick={() => handleDelete(record)}>
+              <Button type="danger" 
+              onClick={() => handleDelete(record)}
+              >
                 Delete
               </Button>
             </Space>
@@ -255,12 +307,12 @@ const handleInputChange = (e) => {
         <Form onFinish={handleFormSubmit}>
           <Form.Item name="FoodName">
             <div style={{ justifyContent: 'flex-start' }}>
-              <label htmlFor="foodName">Food Name</label>
+              <label htmlFor="foodName">Name</label>
               <input
                 type="text"
                 id="FoodName"
                 name="FoodName"
-                placeholder="Input food name"
+                placeholder="Input name of the item"
                 style={{ width: '70%', height: '10px', borderRadius: 5 }}
                 value={formData.FoodName}
                 onChange={handleInputChange}
@@ -285,7 +337,7 @@ const handleInputChange = (e) => {
             </Select>
           </Form.Item>
           <Form.Item
-            label="Food Class"
+            label="Class"
             name="Class"
             rules={[
               {
@@ -295,17 +347,45 @@ const handleInputChange = (e) => {
             ]}
           >
             <Select style={{ width: '60%' }} onChange={(value) => setFormData({ ...formData, Class: value })}>
-              <Select.Option value="Rice">Rice</Select.Option>
-              <Select.Option value="Beans">Beans</Select.Option>
-              <Select.Option value="Yam">Yam</Select.Option>
-              <Select.Option value="Protein">Protein</Select.Option>
-              <Select.Option value="Dessert">Dessert</Select.Option>
-              <Select.Option value="Others">Others</Select.Option>
+              {formData.Category === 'Food' &&(
+                <>
+                  <Select.Option value="Rice">Rice</Select.Option>
+                  <Select.Option value="Beans">Beans</Select.Option>
+                  <Select.Option value="Yam">Yam</Select.Option>
+                  <Select.Option value="Swallows">Swallows</Select.Option>
+                  <Select.Option value="Spaghetti">Spaghetti</Select.Option>
+                  <Select.Option value="Proteins">Proteins</Select.Option>
+                  <Select.Option value="Sauce">Sauce</Select.Option>
+                  <Select.Option value="Others">Others</Select.Option>
+                </>
+              )}
+
+              {formData.Category === 'Snacks' && (
+                <>
+                  <Select.Option value="Doughnuts">Doughnuts</Select.Option>
+                  <Select.Option value="Meatpie">Meatpie</Select.Option>
+                  <Select.Option value="Cake">Cake</Select.Option>
+                  <Select.Option value="Sausage Roll">Sausage Roll</Select.Option>
+                  <Select.Option value="Salad">Salad</Select.Option>
+                  <Select.Option value="Others">Others</Select.Option>
+                </>
+              )}
+
+              {formData.Category === 'Drinks' && (
+                <>
+                  <Select.Option value="Soft Drinks">Soft Drinks</Select.Option>
+                  <Select.Option value="Energy Drinks">Energy Drinks</Select.Option>
+                  <Select.Option value="Yoghurt">Yoghurt</Select.Option>
+                  <Select.Option value="Bottle Water">Bottle Water</Select.Option>
+                  <Select.Option value="Others">Others</Select.Option>
+                </>
+              )}
             </Select>
+
           </Form.Item>
           <Form.Item name="Price">
             <div style={{ justifyContent: 'flex-start' }}>
-              <label>Food Price (Naira)</label>
+              <label>Price of Item (Naira)</label>
               <input
                 type="number"
                 placeholder="Input food price"
@@ -319,7 +399,7 @@ const handleInputChange = (e) => {
           </Form.Item>
           <Form.Item name="TotalQuantity">
           <div style={{ justifyContent: 'flex-start' }}>
-            <label>Food Quantity</label>
+            <label>Quantity of Item</label>
             <input
               type="number"
               placeholder="Input food quantity"

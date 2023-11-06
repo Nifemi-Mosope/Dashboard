@@ -27,13 +27,12 @@ function Reviews() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        // console.log(auth)
         if (userData.Id) {
           const response = await GetReviews(userData, auth);
-          // console.log(response);
+          console.log(response.body);
   
-          if (Array.isArray(response) && response.length > 0) {
-            setReviews(response);
+          if (Array.isArray(response.body) && response.body.length > 0) {
+            setReviews(response.body);
             setHasReviews(true);
           } else {
             setReviews([]);
@@ -54,7 +53,11 @@ function Reviews() {
   
     fetchReviews();
   }, [userData.Id]);
-  
+
+  function formatTimestampToDateString(timestamp) {
+    const date = new Date(timestamp);
+    return `${date.toDateString()} ${date.toLocaleTimeString()}`;
+  }
   
   const handleLikeClick = (index) => {
     const updatedReviews = [...reviews];
@@ -91,8 +94,8 @@ function Reviews() {
   const handleSendClick = () => {
     const timestamp = moment().format('MMMM Do YYYY, h:mm A');
     const newReviewObj = {
-      username: userData.KitchenName,
-      content: newComment,
+      Reviewer: userData.KitchenName,
+      Review: newComment,
       userImage: newCommentUserImage,
       likeCount: 0,
       dislikeCount: 0,
@@ -127,13 +130,13 @@ function Reviews() {
           reviews.map((review, index) => (
             <div key={index} className="review">
               <div className="user-info">
-                <img src={review.userImage} alt={`${review.username}'s avatar`} />
+                <img src={review.userImage} alt={`${review.Reviewer}'s avatar`} />
                 <div className="user-details">
-                  <span className="username">{review.username}</span>
-                  <span className="date">{review.date}</span>
+                  <span className="username">{review.Reviewer}</span>
+                  <span className="date">{moment(review.CreatedAt).format('dddd, MMMM Do YYYY, h:mm:ss a')}</span>
                 </div>
               </div>
-              <p className="review-content">{review.content}</p>
+              <p className="review-content">{review.Review}</p>
               <div className="review-actions">
                 <span className={`like-count ${likedReviews[index] ? "active" : ""}`}>
                   {likedReviews[index] ? (
@@ -142,12 +145,12 @@ function Reviews() {
                         style={{ color: "#c45628" }}
                         onClick={() => handleLikeClick(index)}
                       />
-                      <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.likeCount}</span>
+                      <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.AgreeCount}</span>
                     </>
                   ) : (
                     <>
                       <HeartOutlined onClick={() => handleLikeClick(index)} />
-                      <span style={{ fontFamily: 'sans-serif' }}>{review.likeCount}</span>
+                      <span style={{ fontFamily: 'sans-serif' }}>{review.AgreeCount}</span>
                     </>
                   )}
                 </span>
@@ -158,20 +161,19 @@ function Reviews() {
                         style={{ color: "#c45628" }}
                         onClick={() => handleDislikeClick(index)}
                       />
-                      <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.dislikeCount}</span>
+                      <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.DisagreeCount}</span>
                     </>
                   ) : (
                     <>
-                      <DislikeOutlined onClick={() => handleDislikeClick(index)} />
-                      <span style={{ fontFamily: 'sans-serif' }}>{review.dislikeCount}</span>
+                      <DislikeOutlined onClick={(() => handleDislikeClick(index))} />
+                      <span style={{ fontFamily: 'sans-serif' }}>{review.DisagreeCount}</span>
                     </>
                   )}
                 </span>
               </div>
             </div>
-          ))
+          ))          
         ) : (
-          // No reviews available
           <div style={{fontFamily: 'sans-serif', fontSize: '1.2rem', textAlign: 'center', color: 'grey', marginLeft: '15rem', marginTop: '10rem'}}>
             No Reviews yet, Click the button on your bottom right to get started
           </div>

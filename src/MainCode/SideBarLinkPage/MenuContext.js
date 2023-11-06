@@ -8,6 +8,7 @@ export function useMenuContext() {
 
 export function MenuProvider({ children }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentOrders, setCurrentOrders] = useState([]);
   const [orderHistory, setOrderHistory] = useState([]);
 
   const storedUserData = localStorage.getItem('userData');
@@ -25,11 +26,15 @@ export function MenuProvider({ children }) {
   const storedImage = localStorage.getItem('Image');
   const initialImage = storedImage ? JSON.parse(storedImage) : null;
 
+  const storedOrders = localStorage.getItem('fetchedOrders');
+  const initialOrders = storedOrders ? JSON.parse(storedOrders) : null;
+
   const [userData, setUserData] = useState(initialUserData);
   const [auth, setAuth] = useState(initialAuth);
   const [menus, setMenus] = useState(initialMenus);
   const [staffs, setStaffs] = useState(initialStaff); 
   const [image, setImage] = useState(initialImage);
+  const [fetchedOrders, setFetchedOrders] = useState(initialOrders);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -43,8 +48,21 @@ export function MenuProvider({ children }) {
     setUserData(body);
   };
 
+  const removeOrderAndAddToHistory = (order) => {
+    setCurrentOrders((prevOrders) => prevOrders.filter((prevOrder) => prevOrder !== order));
+    setOrderHistory((prevHistory) => [...prevHistory, order]);
+  };
+
+  const updateOrderHistory = (newOrder) => {
+    setOrderHistory((prevOrderHistory) => [...prevOrderHistory, newOrder]);
+  };
+
+  const addToOrderHistory = (order) => {
+    setOrderHistory((prevOrderHistory) => [...prevOrderHistory, order]);
+  };
+
   return (
-    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage }}>
+    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, currentOrders, removeOrderAndAddToHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage, fetchedOrders, setFetchedOrders, updateOrderHistory, addToOrderHistory }}>
       {children}
     </MenuContext.Provider>
   );

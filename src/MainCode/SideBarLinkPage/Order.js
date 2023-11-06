@@ -2,110 +2,106 @@ import React, { useState, useEffect } from 'react';
 import { Card, Descriptions, Divider, List, Button, Modal, notification, Tag } from 'antd';
 import { useMenuContext } from './MenuContext';
 import moment from 'moment';
-import { GetKitchenOrders } from '../Features/KitchenSlice';
+import { GetKitchenOrders, SendNotification } from '../Features/KitchenSlice';
+import OrderHistoryCard from './OrderHistoryCard';
 
 const Orders = () => {
-  const [displayOrder, setDisplayOrder] = useState({});
+  const [displayOrder, setDisplayOrder] = useState(null);
+  const [fetchedOrders, setFetchedOrders] = useState([]);
   const [acceptClicked, setAcceptClicked] = useState(false);
   const [declineModalVisible, setDeclineModalVisible] = useState(false);
   const [foodAttended, setFoodAttended] = useState(false);
   const [foodDeclined, setFoodDeclined] = useState(false);
   const [orderHistory, setOrderHistory] = useState([]);
-  const { userData, auth, setStaffs, setImage } = useMenuContext();
+  const { userData, auth, addToOrderHistory } = useMenuContext();
   const [orders, setOrders] = useState([]);
-  
+
   useEffect(() => {
     const storedOrders = localStorage.getItem('orders');
     if (storedOrders) {
-      setOrders(JSON.parse(storedOrders));
+      try {
+        const parsedOrders = JSON.parse(storedOrders);
+        setOrders(parsedOrders);
+      } catch (error) {
+        console.error('Failed to parse stored orders:', error);
+      }
     }
   }, []);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const payload = {
+        Email: userData.KitchenEmail,
+      };
+      try {
+        const fetchedOrdersResponse = await GetKitchenOrders(payload, auth);
+        if (fetchedOrdersResponse.code === 200) {
+          setFetchedOrders(fetchedOrdersResponse.body.Orders);
+          console.log('Check 1' ,fetchedOrdersResponse.body.Orders)
+          saveOrdersToLocalStorage(fetchedOrdersResponse.body.Orders);
+        }
+      } catch (error) {
+        console.error('Failed to fetch orders', error);
+      }
+    };
+
+    fetchOrders();
+  }, [userData.KitchenEmail, auth]);
 
   const saveOrdersToLocalStorage = (orders) => {
     localStorage.setItem('orders', JSON.stringify(orders));
   };
 
-  const fetchOrders = async () => {
-    const payload = {
-      Email: userData.KitchenEmail
-    }
-    try {
-      const fetchedOrders = await GetKitchenOrders(payload, auth);
-      console.log(fetchedOrders);
-      setOrders(fetchedOrders);
-      saveOrdersToLocalStorage(fetchedOrders);
-    } catch (error) {
-      console.error('Failed to fetch orders', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
   const updateOrderStatus = (orderId, status) => {
-    // Find the order to update
     const updatedOrders = orders.map((order) => {
       if (order.orderId === orderId) {
         return { ...order, status };
       }
       return order;
     });
-  
+
     setOrders(updatedOrders);
-  
+
     if (status === 'Attended' || status === 'Cancelled') {
-      // Add the order to orderHistory
       const orderToMove = orders.find((order) => order.orderId === orderId);
       setOrderHistory([...orderHistory, orderToMove]);
     }
   };
-  
 
-  const addOrder = (newOrder) => {
-    setOrders([...orders, newOrder]);
-  };
+  const handleAcceptClick = async () => {
+    const payload = {
+      KitchenId: userData.KitchenId,
+      Title: 'Order Accepted',
+      UserId: fetchedOrders.UserId,
+      Message: 'Your order has been accepted.',
+    };
 
-  useEffect(() => {
-    if (orders.length > 0) {
-      setDisplayOrder(orders[0]);
+    try {
+      const notificationResponse = await SendNotification(payload, auth);
+      console.log(notificationResponse);
+      if (notificationResponse) {
+        notification.success({
+          message: 'Order Status Accepted',
+          description: 'The food has been accepted. Notification sent.',
+          duration: 3,
+        });
+      } else {
+        notification.error({
+          message: 'Notification Error',
+          description: 'Failed to send notification.',
+          duration: 3,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send notification', error);
+      notification.error({
+        message: 'Notification Error',
+        description: 'An error occurred while sending the notification.',
+        duration: 3,
+      });
     }
-  }, [orders]);
-
-  const cardStyle = {
-    margin: '1rem',
-    width: '45rem',
-    height: '650px',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
-    alignItems: 'center',
-    marginLeft: '8rem',
-  };
-
-  const descriptionStyle = {
-    whiteSpace: 'pre-wrap',
-    maxWidth: '300px',
-  };
-
-  const calculateTotalSum = (dishes) => {
-    if (Array.isArray(dishes)) {
-      return dishes.reduce((total, dishItem) => total + dishItem.price, 0);
-    }
-    return 0;
-  };
-
-  // Check if displayOrder.dishes is an array before using reduce
-  const totalSum = calculateTotalSum(displayOrder.dishes);
-
-  const handleAcceptClick = () => {
-    updateOrderStatus(displayOrder.orderId, 'Attended');
 
     setAcceptClicked(true);
-
-    notification.success({
-      message: 'Order Status Accepted',
-      description: 'The food has been accepted.',
-      duration: 3,
-    });
   };
 
   const showDeclineModal = () => {
@@ -115,48 +111,107 @@ const Orders = () => {
   const hideDeclineModal = () => {
     setDeclineModalVisible(false);
   };
-  
-  const handleDeclineOrder = () => {
-    updateOrderStatus(displayOrder.orderId, 'Cancelled');
 
+  const handleDeclineOrder = async () => {
+    const payload = {
+      KitchenId: userData.KitchenId,
+      Title: 'Order Declined',
+      UserId: fetchedOrders.UserId,
+      Message: 'Your order has been been declined due to some abnormalities in the Kitchen, We are sorry for the inconvience, please do well to check your wallet for your balance',
+    };
+
+    try {
+      const notificationResponse = await SendNotification(payload, auth);
+      console.log(notificationResponse);
+      if (notificationResponse) {
+        notification.error({
+          message: 'Order Status Cancelled',
+          description: 'The food has been cancelled.',
+          duration: 3,
+        });
+      } else {
+        notification.error({
+          message: 'Notification Error',
+          description: 'Failed to send notification.',
+          duration: 3,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send notification', error);
+      notification.error({
+        message: 'Notification Error',
+        description: 'An error occurred while sending the notification.',
+        duration: 3,
+      });
+    }
     hideDeclineModal();
-
-    notification.error({
-      message: 'Order Cancelled',
-      description: 'The food has been cancelled',
-      duration: 3,
-    });
     setFoodDeclined(true);
+    addToOrderHistory(fetchedOrders[0]);
   };
 
-  const handleFoodPackagedClick = () => {
+  const handleFoodPackagedClick = async () => {
+    const payload = {
+      KitchenId: userData.KitchenId,
+      Title: 'Order Done & Packaged  ',
+      UserId: fetchedOrders.UserId,
+      Message: 'Your order has been done and packaged, please do well to come and pick up your food as early as possible. Thank you using QuicKee 😊',
+    };
+
+    try {
+      const notificationResponse = await SendNotification(payload, auth);
+      console.log(notificationResponse);
+      if (notificationResponse) {
+        notification.success({
+          message: 'Order Status Packaged & Done',
+          description: 'The food has been packaged. Notification sent. Thank you for your Time 😊',
+          duration: 3,
+        });
+      } else {
+        notification.error({
+          message: 'Notification Error',
+          description: 'Failed to send notification.',
+          duration: 3,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send notification', error);
+      notification.error({
+        message: 'Notification Error',
+        description: 'An error occurred while sending the notification.',
+        duration: 3,
+      });
+    }
     setFoodAttended(true);
-
-    notification.success({
-      message: 'Order Status Updated',
-      description: 'The food has been packaged and is now ready for pickup.',
-      duration: 3,
-    });
+    addToOrderHistory(fetchedOrders[0]);
   };
+
+  const calculateTotalSum = (dishes) => {
+    if (Array.isArray(dishes)) {
+      return dishes.reduce((total, dishItem) => total + dishItem.Price, 0);
+    }
+    return 0;
+  };
+
+  const totalSum = fetchedOrders ? calculateTotalSum(fetchedOrders.Items) : 0;
 
   return (
     <div style={{ marginLeft: '7rem', display: 'flex', justifyContent: 'center' }}>
-      {displayOrder.orderId && ( // Conditional rendering
-        <Card title={
+      {fetchedOrders.length > 0 ? (
+        <Card
+          title={
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              Order {displayOrder.orderId}
+              Order {fetchedOrders[0].TrxRef}
               <span style={{ marginLeft: 'auto', fontSize: '14px' }}>
-                {moment(displayOrder.date).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+                {moment(fetchedOrders[0].CreatedAt).format('dddd, MMMM Do YYYY, h:mm:ss a')}
               </span>
             </div>
-          } style={cardStyle}>
+          }
+          style={cardStyle}
+        >
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Order ID">{displayOrder.orderId}</Descriptions.Item>
-            <Descriptions.Item label="Customer">
-              {displayOrder.customer || 'N/A'}
-            </Descriptions.Item>
+            <Descriptions.Item label="Order ID">{fetchedOrders[0].TrxRef}</Descriptions.Item>
             <Descriptions.Item label="Customer Description" style={descriptionStyle}>
-              {displayOrder.description || 'NIL'}
+              {fetchedOrders[0].Description || 'NIL'}
             </Descriptions.Item>
             {foodAttended ? (
               <Descriptions.Item label="Status">
@@ -171,20 +226,20 @@ const Orders = () => {
           </Descriptions>
           <Divider />
           <List
-            dataSource={displayOrder.dishes || []}
-            renderItem={(dishItem) => (
-              <List.Item>
+            dataSource={fetchedOrders[0].Items}
+            renderItem={(dishItem, index) => (
+              <List.Item key={index}>
                 <div style={{ fontWeight: 'bold' }}>
-                  {dishItem.dish} x{dishItem.scoops}
+                  {dishItem.Name} x{dishItem.Scoops}
                 </div>
-                <div>₦{dishItem.price}</div>
+                <div>₦{dishItem.Price}</div>
               </List.Item>
             )}
           />
           <Divider />
           <div style={styles.totalSum}>
             <h2>Total:</h2>
-            <h2 style={styles.totalPrice}>₦{totalSum}</h2>
+            <h2 style={styles.totalPrice}>₦{fetchedOrders[0].TotalAmount}</h2>
           </div>
           <Divider />
           <div style={styles.buttonContainer}>
@@ -193,20 +248,14 @@ const Orders = () => {
                 Delay or Decline Order
               </Button>
             )}
-            {!acceptClicked && !foodAttended && !foodDeclined ? ( 
-              <Button
-                block
-                type="primary"
-                size="large"
-                style={styles.button}
-                onClick={handleAcceptClick}
-              >
+            {!acceptClicked && !foodAttended && !foodDeclined ? (
+              <Button block type="primary" size="large" style={styles.button} onClick={handleAcceptClick}>
                 Accept Order
               </Button>
             ) : null}
-            {acceptClicked && !foodAttended && !foodDeclined ? ( 
+            {acceptClicked && !foodAttended && !foodDeclined ? (
               <Button block type="primary" size="large" onClick={handleFoodPackagedClick}>
-                Food has been Packaged and now Ready for PickUp
+                Food has been Packaged and is now Ready for PickUp
               </Button>
             ) : null}
           </div>
@@ -222,9 +271,27 @@ const Orders = () => {
             Are you sure you want to decline this order?
           </Modal>
         </Card>
+      ) : (
+        <div style={{ textAlign: 'center', fontSize: '1.2rem', color: 'grey' }}>
+          {fetchedOrders.length === 0 ? 'No orders fetched yet' : 'Loading...'}
+        </div>
       )}
     </div>
   );
+};
+
+const cardStyle = {
+  margin: '1rem',
+  width: '45rem',
+  height: '650px',
+  boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
+  alignItems: 'center',
+  marginLeft: '8rem',
+};
+
+const descriptionStyle = {
+  whiteSpace: 'pre-wrap',
+  maxWidth: '300px',
 };
 
 const styles = {

@@ -11,10 +11,11 @@ function Header() {
     width: '50px',
     borderRadius: '50%',
   };
+  console.log(image);
 
   return (
     <div className='Header'>
-      <Image src={image && image.ImageUrl ? image.ImageUrl : quickeeImage} style={imageStyle} />
+      <Image src={image && image.ImageUrl ? `http://192.168.127.144:85/Uploads/${image.ImageUrl}` : quickeeImage} style={imageStyle} />
       <Typography.Title style={{ fontFamily: 'sans-serif' }}>{userData ? userData.KitchenName : 'Loading...'}</Typography.Title>
 
       <div style={{ marginRight: '1%' }}>

@@ -7,6 +7,7 @@ import './index.css'
 import ForgotPassword from './MainCode/ForgotPassword/ForgotPassword';
 import ResetPassword from './MainCode/ForgotPassword/ResetPassword';
 import VerifyEmail from './MainCode/SideBarLinkPage/VerifyEmail/VerifyEmail';
+import ResendCode from './MainCode/SideBarLinkPage/VerifyEmail/ResendVerifyEmail';
 
 function App() {
   const routes = useRoutes([
@@ -15,7 +16,8 @@ function App() {
     { path: '/home', element: <Home /> },
     { path: '/forgotpassword', element: <ForgotPassword /> },
     { path: '/resetPassword/:email', element: <ResetPassword/>},
-    { path: '/verifyEmail', element: <VerifyEmail/> }
+    { path: '/verifyEmail', element: <VerifyEmail/> },
+    { path: '/resendEmail', element: <ResendCode/>}
   ]);
 
   return (
