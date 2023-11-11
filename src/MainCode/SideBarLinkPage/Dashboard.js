@@ -7,7 +7,6 @@ import { GetKitchenOrders, GetReviews } from "../Features/KitchenSlice";
 import { useMenuContext } from "./MenuContext";
 
 function Dashboard() {
-  const [dailyCustomerCounts, setDailyCustomerCounts] = useState([]);
   const [mostOrderedFood, setMostOrderedFood] = useState("");
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
@@ -17,6 +16,7 @@ function Dashboard() {
   const [previousDayTotalCustomers, setPreviousDayTotalCustomers] = useState(0);
   const [previousDayTotalReviews, setPreviousDayTotalReviews] = useState(0);
   const [previousDayTotalRevenue, setPreviousDayTotalRevenue] = useState(0);
+  const [dailyOrdersCount, setDailyOrdersCount] = useState(0);
 
   const { userData, auth } = useMenuContext();
 
@@ -52,15 +52,30 @@ function Dashboard() {
     return 0;
   };
 
+
+
   useEffect(() => {
     const fetchKitchenOrders = async () => {
       try {
-        const data = { Email: userData.KitchenEmail };
-        const response = await GetKitchenOrders(data, auth);
+        const response = await GetKitchenOrders(userData, auth);
         if (response && response.code === 200) {
           const orders = response.body.Orders;
-          const totalOrdersReceived = orders.length;
+
+          const paidOrders = orders.filter((order) => order.IsPaid === true);
+    
+          const totalOrdersReceived = paidOrders.length;
           setTotalOrders(totalOrdersReceived);
+
+          if (paidOrders.length > 0) {
+            const totalRevenueReceived = calculateTotalRevenue(paidOrders);
+            setTotalRevenue(totalRevenueReceived);
+          } else {
+            setTotalRevenue(0);
+          }
+
+          const currentDateToday = new Date();
+          const dailyOrders = calculateDailyOrders(orders, currentDateToday);
+          setDailyOrdersCount(dailyOrders);
 
           const previousDayTotal = getPreviousDayTotalOrders();
 
@@ -71,10 +86,14 @@ function Dashboard() {
           const reviewsResponse = await GetReviews(userData, auth);
           if (reviewsResponse && reviewsResponse.code === 200) {
             const reviews = reviewsResponse.body;
-            const totalReviewsReceived = reviews.length;
+
+            const totalReviewsReceived = reviews ? reviews.length : 0;
+
             setTotalReviews(totalReviewsReceived);
+
             const previousDayTotalReviews = getPreviousDayTotalReviews();
             setPreviousDayTotalReviews(previousDayTotalReviews);
+
             localStorage.setItem('totalReviews', totalReviewsReceived.toString());
           } else {
             console.error("Failed to fetch kitchen reviews");
@@ -103,17 +122,15 @@ function Dashboard() {
               return food;
             }
             return mostOrdered;
-          });
+          }, null);
 
           setMostOrderedFood(mostOrdered);
 
           setPreviousDayTotalOrders(previousDayTotal);
 
-          // Calculate the previous day total customers
           const previousDayTotalCustomers = getPreviousDayTotalCustomers();
           setPreviousDayTotalCustomers(previousDayTotalCustomers);
 
-          // Update previous day total revenue
           setPreviousDayTotalRevenue(previousDayTotalRevenue);
 
           localStorage.setItem('totalOrders', totalOrdersReceived.toString());
@@ -127,7 +144,19 @@ function Dashboard() {
       }
     };
     fetchKitchenOrders();
-  }, []);
+  }, [userData.KitchenEmail, auth]);
+
+  // Function to calculate the daily orders count
+  function calculateDailyOrders(orders, currentDate) {
+    return orders.filter((order) => {
+      const orderDate = new Date(order.CreatedAt);
+      return (
+        orderDate.getDate() === currentDate.getDate() &&
+        orderDate.getMonth() === currentDate.getMonth() &&
+        orderDate.getFullYear() === currentDate.getFullYear()
+      );
+    }).length;
+  }
 
   function calculateTotalCustomersForCurrentDate(orders, currentDate) {
     const customerSet = new Set();
@@ -149,20 +178,25 @@ function Dashboard() {
   }
 
   function calculateTotalRevenue(orders) {
-    return orders.reduce((total, order) => total + order.TotalPrice, 0);
+    if (orders.length === 0) {
+      return 0; // Return 0 if the orders array is empty
+    }
+  
+    return orders.reduce((total, order) => total + parseFloat(order.TotalPrice || 0), 0);
   }
+  
 
   return (
     <div style={{ overflowX: "hidden" }}>
       <Space size={10} direction="vertical">
         <Typography.Title level={3}>Dashboard</Typography.Title>
-        <Space size={15}>
-          <DashboardCard
-            icon={<ShoppingCart weight="fill" color="green" size={30} />}
-            title={"Orders"}
-            value={totalOrders}
-            previousValue={previousDayTotalOrders}
-          />
+        <Space size={15} direction="horizontal">
+          <Card style={{ backgroundColor: "#f2f2f2", borderColor: "black", flex: 1 }}>
+            <Space direction="horizontal" size={15}>
+              <ShoppingCart weight="fill" color="green" size={30} />
+              <Statistic title="Orders" value={totalOrders} />
+            </Space>
+          </Card>
           <DashboardCard
             icon={<Hamburger weight="fill" color="green" size={30} />}
             title={"Most Ordered Food"}

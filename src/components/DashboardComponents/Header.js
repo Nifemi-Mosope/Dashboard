@@ -11,7 +11,7 @@ function Header() {
     width: '50px',
     borderRadius: '50%',
   };
-  console.log(image);
+  // console.log(image);
 
   return (
     <div className='Header'>

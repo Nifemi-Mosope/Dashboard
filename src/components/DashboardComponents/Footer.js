@@ -18,14 +18,6 @@ function Footer() {
         </div>
         <div className="social-icons">
           <a
-            href="https://www.facebook.com/your-facebook-page-url"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="social-icon"
-          >
-            <FacebookLogo style={{ ...iconStyle, color: '#1877F2' }} weight='fill' />
-          </a>
-          <a
             href="https://api.whatsapp.com/send?09134228578"
             target="_blank"
             rel="noopener noreferrer"

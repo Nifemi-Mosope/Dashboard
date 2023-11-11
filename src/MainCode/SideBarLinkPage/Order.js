@@ -16,6 +16,14 @@ const Orders = () => {
   const { userData, auth, addToOrderHistory } = useMenuContext();
   const [orders, setOrders] = useState([]);
 
+  const currentDate = moment();
+  const startOfDay = currentDate.startOf('day');
+  const endOfDay = currentDate.endOf('day');
+  const filteredOrders = fetchedOrders.filter(order => {
+    const orderDate = moment(order.CreatedAt);
+    return orderDate.isBetween(startOfDay, endOfDay, null, '[]');
+  });
+
   useEffect(() => {
     const storedOrders = localStorage.getItem('orders');
     if (storedOrders) {
@@ -30,15 +38,13 @@ const Orders = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const payload = {
-        Email: userData.KitchenEmail,
-      };
       try {
-        const fetchedOrdersResponse = await GetKitchenOrders(payload, auth);
+        const fetchedOrdersResponse = await GetKitchenOrders(userData, auth);
+        // console.log('FetchedOrders', fetchedOrdersResponse)
         if (fetchedOrdersResponse.code === 200) {
           setFetchedOrders(fetchedOrdersResponse.body.Orders);
-          console.log('Check 1' ,fetchedOrdersResponse.body.Orders)
-          saveOrdersToLocalStorage(fetchedOrdersResponse.body.Orders);
+          // console.log('Check 1' ,fetchedOrdersResponse.body.Orders)
+          // saveOrdersToLocalStorage(fetchedOrdersResponse.body.Orders);
         }
       } catch (error) {
         console.error('Failed to fetch orders', error);
@@ -196,7 +202,7 @@ const Orders = () => {
 
   return (
     <div style={{ marginLeft: '7rem', display: 'flex', justifyContent: 'center' }}>
-      {fetchedOrders.length > 0 ? (
+      {filteredOrders.length > 0 ? (
         <Card
           title={
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -272,8 +278,8 @@ const Orders = () => {
           </Modal>
         </Card>
       ) : (
-        <div style={{ textAlign: 'center', fontSize: '1.2rem', color: 'grey' }}>
-          {fetchedOrders.length === 0 ? 'No orders fetched yet' : 'Loading...'}
+        <div style={{ textAlign: 'center', fontSize: '2rem', color: 'grey', marginRight: '7%', marginTop: '20%' }}>
+          {filteredOrders.length === 0 ? 'No delicious orders have arrived just yet. The kitchen awaits its first culinary masterpiece! 🍔🍕🍝' : 'Loading...'}
         </div>
       )}
     </div>

@@ -67,9 +67,9 @@ const MenuScreen = () => {
         ...formData,
         Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
       };
-  
+
       const response = await CreateMenu(newValues, auth);
-  
+
       if (response.code === 200) {
         if (editItem) {
           const updatedMenuItems = menuItems.map((item) => {
@@ -83,10 +83,9 @@ const MenuScreen = () => {
             }
             return item;
           });
-  
-          // Update local storage with the entire updated array
+
           localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
-  
+
           setMenuItems(updatedMenuItems);
           setEditItem(null);
         } else {
@@ -95,12 +94,11 @@ const MenuScreen = () => {
             ...formData,
             Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
           };
-  
-          const updatedMenuItems = menuItems.concat(newMenuItem); // Concatenate the new item
-  
-          // Update local storage with the entire updated array
+
+          const updatedMenuItems = menuItems ? menuItems.concat(newMenuItem) : [newMenuItem];
+
           localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
-  
+
           setMenuItems(updatedMenuItems);
           message.success('Menu item created successfully.');
           console.log(response);

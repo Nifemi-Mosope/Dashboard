@@ -15,10 +15,7 @@ function History() {
 
   const fetchKitchenOrders = async () => {
     try {
-      const payload = {
-        Email: userData.KitchenEmail,
-      };
-      const response = await GetKitchenOrders(payload, auth);
+      const response = await GetKitchenOrders(userData, auth);
       if (response.code === 200) {
         setKitchenOrders(response.body.Orders);
         setFilteredKitchenOrders(response.body.Orders);
@@ -59,7 +56,7 @@ function History() {
 
   const renderOrderDate = (date) => {
     const orderDate = new Date(date);
-    return orderDate.toDateString(); // Modify the format as needed
+    return orderDate.toDateString();
   }
 
   const tableColumns = [
@@ -125,10 +122,10 @@ function History() {
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         onSearch={handleSearch}
-        style={{ width: '20rem', marginLeft: '87%', marginTop: '1rem' }}
+        style={{ width: '20rem', marginLeft: '73%', marginTop: '1rem' }}
         allowClear
       />
-      <Card title={"Order History"} style={{ margin: 20, width: '120%' }}>
+      <Card title={"Order History"} style={{ margin: 20, width: '65rem', marginLeft: '3rem' }}>
         <Table
           dataSource={filteredKitchenOrders}
           columns={tableColumns}

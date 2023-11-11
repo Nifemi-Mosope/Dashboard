@@ -268,7 +268,7 @@ export async function AddStaff(data, auth) {
 export async function GetKitchenOrders(data, auth) {
     try {
         // console.log(data, ' Auth ', auth)
-        const path = BASE_PATH + `/GetKitchenOrders?Email=${data.Email}`
+        const path = BASE_PATH + `/GetKitchenOrders?Email=${data.KitchenEmail}`
         const response = await axiosWithAuth(auth.accesstoken).get(path)
         // console.log( 'Response-1: ' ,response)
         return response.data

@@ -13,14 +13,31 @@ function RecentOrders() {
 
     const fetchRecentOrders = async () => {
       try {
-        const data = { Email: userData.KitchenEmail };
-        const response = await GetKitchenOrders(data, auth);
+        const response = await GetKitchenOrders(userData, auth);
 
         if (response && response.code === 200) {
           const orders = response.body.Orders;
           if (orders && Array.isArray(orders)) {
-            const recentOrders = orders.slice(0, 5);
-            setDataSource(recentOrders);
+
+            const currentDate = new Date();
+            const currentDay = currentDate.getDate();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+
+            // Filter and display only paid orders
+            const recentOrders = orders.filter((order) => {
+              const orderDate = new Date(order.CreatedAt);
+              return (
+                orderDate.getDate() === currentDay &&
+                orderDate.getMonth() === currentMonth &&
+                orderDate.getFullYear() === currentYear &&
+                order.IsPaid === true
+              );
+            });
+
+            recentOrders.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
+            const firstFiveRecentOrders = recentOrders.slice(0, 5);
+            setDataSource(firstFiveRecentOrders);
           } else {
             console.error("No valid orders found in the response.");
           }
@@ -35,7 +52,7 @@ function RecentOrders() {
     };
 
     fetchRecentOrders();
-  }, []);
+  }, [userData.KitchenEmail, auth]);
 
   const columns = [
     {
