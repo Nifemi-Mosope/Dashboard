@@ -1,26 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './dash.css';
 import quickeeImage from './Quickee.jpeg';
-import { Badge, Image, Space, Typography } from 'antd';
+import { Badge, Image, Rate, Space, Typography } from 'antd';
 import { MailOutlined, BellFilled } from '@ant-design/icons';
 import { useMenuContext } from '../../MainCode/SideBarLinkPage/MenuContext';
+import { GetReviews } from '../../MainCode/Features/KitchenSlice';
 
 function Header() {
-  const { userData, image } = useMenuContext();
+  const { userData, image, auth } = useMenuContext();
+  const [totalReviews, setTotalReviews] = useState(0);
+  const storedKitchenImageUrl = localStorage.getItem('kitchenImageUrl');
   const imageStyle = {
     width: '50px',
     borderRadius: '50%',
   };
-  // console.log(image);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await GetReviews(userData, auth);
+      if (response && response.code === 200) {
+        const reviewsResponse = response.body;
+        const totalReviewsReceived = reviewsResponse ? reviewsResponse.length : 0;
+        setTotalReviews(totalReviewsReceived);
+        localStorage.setItem('totalReviews', totalReviewsReceived.toString());
+      }
+    } catch (error) {
+      console.error("Error fetching kitchen reviews:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [userData.Id, auth]);
+
+  const getKitchenImageUrl = () => {
+    if (userData && userData.KitchenImage) {
+      return `http://192.168.226.144:85/Uploads/${userData.KitchenImage}`;
+    }
+    return quickeeImage;
+  };
+
+  const kitchenImageUrl = getKitchenImageUrl();
+
+  if (kitchenImageUrl !== storedKitchenImageUrl) {
+    localStorage.setItem('kitchenImageUrl', kitchenImageUrl);
+  }
 
   return (
     <div className='Header'>
-      <Image src={image && image.ImageUrl ? `http://192.168.127.144:85/Uploads/${image.ImageUrl}` : quickeeImage} style={imageStyle} />
-      <Typography.Title style={{ fontFamily: 'sans-serif' }}>{userData ? userData.KitchenName : 'Loading...'}</Typography.Title>
+      <Image src={kitchenImageUrl} style={imageStyle} />
+      <Typography.Title style={{ fontFamily: 'sans-serif', marginLeft: '5%' }}>{userData ? userData.KitchenName : 'Loading...'}</Typography.Title>
 
-      <div style={{ marginRight: '1%' }}>
+      <div style={{ marginRight: '3%' }}>
         <Space size={26}>
-          <Badge style={{ cursor: 'pointer' }}>
+          <Rate />
+          <Badge count={totalReviews} style={{ cursor: 'pointer' }}>
             <MailOutlined style={{ fontSize: '20px' }} />
           </Badge>
           <Badge style={{ cursor: 'pointer' }} >

@@ -49,15 +49,31 @@ function History() {
     setCurrentPage(page);
   };
 
-  const renderOrderStatus = (orderStatus) => {
+  const renderOrderStatus = (orderStatus, isPaid) => {
     const color = orderStatus === 'Attended' ? 'green' : 'red';
-    return <Tag color={color}>{orderStatus}</Tag>;
+    const statusTag = <Tag color={color}>{orderStatus}</Tag>;
+
+    if (isPaid) {
+      return (
+        <>
+          {statusTag}
+          <Tag color="#006400">Paid</Tag>
+        </>
+      );
+    }
+
+    return (
+      <>
+        {statusTag}
+        <Tag color="#FF0000">Not Paid/Pending</Tag>
+      </>
+    );
   };
 
   const renderOrderDate = (date) => {
     const orderDate = new Date(date);
     return orderDate.toDateString();
-  }
+  };
 
   const tableColumns = [
     {
@@ -88,7 +104,7 @@ function History() {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: renderOrderStatus,
+      render: (text, record) => renderOrderStatus(text, record.IsPaid),
     },
     {
       title: 'Date',
@@ -160,9 +176,9 @@ function History() {
                 </li>
               ))}
             </ul>
-            <p>Status: {renderOrderStatus(selectedOrder.status)}</p>
+            <p>Status: {renderOrderStatus(selectedOrder.status, selectedOrder.IsPaid)}</p>
             <p>Total Price: ₦{selectedOrder.TotalAmount}</p>
-            <p>Date: {selectedOrder.CreatedAt}</p>
+            <p>Date: {renderOrderDate(selectedOrder.CreatedAt)}</p>
           </div>
         )}
       </Modal>

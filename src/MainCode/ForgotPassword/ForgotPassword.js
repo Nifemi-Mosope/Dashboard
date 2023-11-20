@@ -23,14 +23,6 @@ function ForgotPassword() {
     e.preventDefault();
   
     try {
-      // Ensure that formData.Email is not undefined
-      // if (!formData.Email) {
-      //   notification.error({
-      //     message: 'Invalid Email',
-      //     description: 'Please enter a valid email address.',
-      //   });
-      //   return;
-      // } 
       const payload = {
         Email: formData.Email,
       };

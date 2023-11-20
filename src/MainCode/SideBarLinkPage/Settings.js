@@ -99,7 +99,7 @@ function Settings() {
       };
   
       const response = await AddStaff(staffData, auth);
-      console.log(response)
+      console.log('StaffLog: ' ,response)
       if (response.code === 200) {
         localStorage.setItem('staffs', JSON.stringify(response.body));
         const { FirstName, LastName, Email, Password } = formData;

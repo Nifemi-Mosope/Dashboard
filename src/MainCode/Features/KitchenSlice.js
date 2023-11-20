@@ -106,10 +106,8 @@ export async function Forgotpassword(data) {
             Email: data.Email
         }
         console.log(payload)
-        const path = `${BASE_PATH}/ForgotPassword?Email=${data.Email}`;
+        const path = BASE_PATH + `/ForgotPassword?Email=${data.Email}`;
         const response = await axios.post(path, payload);
-        console.log(response);
-        console.log(payload)
         return response.data;
     } catch (error) {
         console.log(error?.response?.data)
@@ -200,7 +198,7 @@ export async function GetReviews(userData, auth) {
         const path = BASE_PATH + `/GetReviewsByKitchenId?KitchenId=${userData.Id}`;
         const response = await axiosWithAuth(auth.accesstoken).get(path);
         if(response){
-            console.log('Reviews data' , response.data);
+            // console.log('Reviews data' , response.data);
             return response.data;
         }
       } else {
@@ -302,9 +300,28 @@ export async function SendNotification(data, auth) {
             UserId: data.UserId,
             Message: data.Message,
         }
+        console.log('Me: ' ,payload)
         const path = BASE_PATH + "/SendNotification"
         const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
-        console.log(response)
+        console.log(response.data)
+        return response.data
+    } catch (error) {
+        console.log(error?.response?.data);
+        return error?.response?.data;
+    }
+}
+
+export async function NotifyEveryone(data, auth) {
+    try {
+        const payload = {
+            KitchenId: data.KitchenId,
+            Title: data.Title,
+            UserId: data.UserId,
+            Message: data.Message,
+        }
+        const path = BASE_PATH + "/NotifiyAllUsers"
+        const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
+        console.log(response.data)
         return response.data
     } catch (error) {
         console.log(error?.response?.data);

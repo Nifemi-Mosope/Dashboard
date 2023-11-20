@@ -6,22 +6,20 @@ import { GetKitchenOrders, SendNotification } from '../Features/KitchenSlice';
 import OrderHistoryCard from './OrderHistoryCard';
 
 const Orders = () => {
-  const [displayOrder, setDisplayOrder] = useState(null);
-  const [fetchedOrders, setFetchedOrders] = useState([]);
-  const [acceptClicked, setAcceptClicked] = useState(false);
-  const [declineModalVisible, setDeclineModalVisible] = useState(false);
-  const [foodAttended, setFoodAttended] = useState(false);
-  const [foodDeclined, setFoodDeclined] = useState(false);
-  const [orderHistory, setOrderHistory] = useState([]);
-  const { userData, auth, addToOrderHistory } = useMenuContext();
+  const { userData, auth } = useMenuContext();
   const [orders, setOrders] = useState([]);
-
+  const [fetchedOrders, setFetchedOrders] = useState([]);
+  const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
+  const [attendedOrders, setAttendedOrders] = useState([]);
+  const [doneAndPackagedOrders, setDoneAndPackagedOrders] = useState([]);
+  const currentOrder = fetchedOrders[currentOrderIndex];
+  // console.log('userData ', userData)
+  
   const currentDate = moment();
-  const startOfDay = currentDate.startOf('day');
-  const endOfDay = currentDate.endOf('day');
-  const filteredOrders = fetchedOrders.filter(order => {
+  const today = currentDate.day();
+  const filteredOrders = fetchedOrders.filter((order) => {
     const orderDate = moment(order.CreatedAt);
-    return orderDate.isBetween(startOfDay, endOfDay, null, '[]');
+    return today === orderDate.day();
   });
 
   useEffect(() => {
@@ -40,11 +38,9 @@ const Orders = () => {
     const fetchOrders = async () => {
       try {
         const fetchedOrdersResponse = await GetKitchenOrders(userData, auth);
-        // console.log('FetchedOrders', fetchedOrdersResponse)
+        console.log('Okay' ,fetchedOrdersResponse);
         if (fetchedOrdersResponse.code === 200) {
           setFetchedOrders(fetchedOrdersResponse.body.Orders);
-          // console.log('Check 1' ,fetchedOrdersResponse.body.Orders)
-          // saveOrdersToLocalStorage(fetchedOrdersResponse.body.Orders);
         }
       } catch (error) {
         console.error('Failed to fetch orders', error);
@@ -53,143 +49,6 @@ const Orders = () => {
 
     fetchOrders();
   }, [userData.KitchenEmail, auth]);
-
-  const saveOrdersToLocalStorage = (orders) => {
-    localStorage.setItem('orders', JSON.stringify(orders));
-  };
-
-  const updateOrderStatus = (orderId, status) => {
-    const updatedOrders = orders.map((order) => {
-      if (order.orderId === orderId) {
-        return { ...order, status };
-      }
-      return order;
-    });
-
-    setOrders(updatedOrders);
-
-    if (status === 'Attended' || status === 'Cancelled') {
-      const orderToMove = orders.find((order) => order.orderId === orderId);
-      setOrderHistory([...orderHistory, orderToMove]);
-    }
-  };
-
-  const handleAcceptClick = async () => {
-    const payload = {
-      KitchenId: userData.KitchenId,
-      Title: 'Order Accepted',
-      UserId: fetchedOrders.UserId,
-      Message: 'Your order has been accepted.',
-    };
-
-    try {
-      const notificationResponse = await SendNotification(payload, auth);
-      console.log(notificationResponse);
-      if (notificationResponse) {
-        notification.success({
-          message: 'Order Status Accepted',
-          description: 'The food has been accepted. Notification sent.',
-          duration: 3,
-        });
-      } else {
-        notification.error({
-          message: 'Notification Error',
-          description: 'Failed to send notification.',
-          duration: 3,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to send notification', error);
-      notification.error({
-        message: 'Notification Error',
-        description: 'An error occurred while sending the notification.',
-        duration: 3,
-      });
-    }
-
-    setAcceptClicked(true);
-  };
-
-  const showDeclineModal = () => {
-    setDeclineModalVisible(true);
-  };
-
-  const hideDeclineModal = () => {
-    setDeclineModalVisible(false);
-  };
-
-  const handleDeclineOrder = async () => {
-    const payload = {
-      KitchenId: userData.KitchenId,
-      Title: 'Order Declined',
-      UserId: fetchedOrders.UserId,
-      Message: 'Your order has been been declined due to some abnormalities in the Kitchen, We are sorry for the inconvience, please do well to check your wallet for your balance',
-    };
-
-    try {
-      const notificationResponse = await SendNotification(payload, auth);
-      console.log(notificationResponse);
-      if (notificationResponse) {
-        notification.error({
-          message: 'Order Status Cancelled',
-          description: 'The food has been cancelled.',
-          duration: 3,
-        });
-      } else {
-        notification.error({
-          message: 'Notification Error',
-          description: 'Failed to send notification.',
-          duration: 3,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to send notification', error);
-      notification.error({
-        message: 'Notification Error',
-        description: 'An error occurred while sending the notification.',
-        duration: 3,
-      });
-    }
-    hideDeclineModal();
-    setFoodDeclined(true);
-    addToOrderHistory(fetchedOrders[0]);
-  };
-
-  const handleFoodPackagedClick = async () => {
-    const payload = {
-      KitchenId: userData.KitchenId,
-      Title: 'Order Done & Packaged  ',
-      UserId: fetchedOrders.UserId,
-      Message: 'Your order has been done and packaged, please do well to come and pick up your food as early as possible. Thank you using QuicKee 😊',
-    };
-
-    try {
-      const notificationResponse = await SendNotification(payload, auth);
-      console.log(notificationResponse);
-      if (notificationResponse) {
-        notification.success({
-          message: 'Order Status Packaged & Done',
-          description: 'The food has been packaged. Notification sent. Thank you for your Time 😊',
-          duration: 3,
-        });
-      } else {
-        notification.error({
-          message: 'Notification Error',
-          description: 'Failed to send notification.',
-          duration: 3,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to send notification', error);
-      notification.error({
-        message: 'Notification Error',
-        description: 'An error occurred while sending the notification.',
-        duration: 3,
-      });
-    }
-    setFoodAttended(true);
-    addToOrderHistory(fetchedOrders[0]);
-  };
 
   const calculateTotalSum = (dishes) => {
     if (Array.isArray(dishes)) {
@@ -200,39 +59,83 @@ const Orders = () => {
 
   const totalSum = fetchedOrders ? calculateTotalSum(fetchedOrders.Items) : 0;
 
+  const handleSeeNextClick = () => {
+    setCurrentOrderIndex((prevIndex) => {
+      let newIndex = (prevIndex + 1) % fetchedOrders.length;
+      while (!fetchedOrders[newIndex].IsPaid) {
+        newIndex = (newIndex + 1) % fetchedOrders.length;
+      }
+      return newIndex;
+    });
+  };
+
+  const handleAttendButtonClick = async () => {
+    setAttendedOrders((prevAttendedOrders) => [
+      ...prevAttendedOrders,
+      currentOrder.TrxRef,
+    ]);
+
+    const notificationData = {
+      KitchenId: userData.Id,
+      Title: `${userData.KitchenName} - Your Order is being attended to`,
+      UserId: currentOrder.UserId,
+      Message: `Your order with ID ${currentOrder.TrxRef} is being attended to`,
+    };
+  
+    const notificationResponse = await SendNotification(notificationData, auth);
+    if (notificationResponse && notificationResponse.code === 200) {
+      console.log('Notification sent successfully');
+    } else {
+      console.error('Failed to send notification:', notificationResponse);
+    }
+  };
+
+  const handleDoneAndPackagedButtonClick = async () => {
+    setDoneAndPackagedOrders((prevDoneAndPackagedOrders) => [
+      ...prevDoneAndPackagedOrders,
+      currentOrder.TrxRef,
+    ]);
+  
+    const notificationData = {
+      KitchenId: userData.Id,
+      Title: `${userData.KitchenName} - Order Done and Packaged`,
+      UserId: currentOrder.UserId,
+      Message: `Your order with ID ${currentOrder.TrxRef} is done and packaged!. Come and pickup your food early so that it won't be cold. Thank you for using QuicKee`,
+    };
+  
+    const notificationResponse = await SendNotification(notificationData, auth);
+    if (notificationResponse && notificationResponse.code === 200) {
+      console.log('Notification sent successfully');
+    } else {
+      console.error('Failed to send notification:', notificationResponse);
+    }
+  
+    handleSeeNextClick();
+  };
+
   return (
     <div style={{ marginLeft: '7rem', display: 'flex', justifyContent: 'center' }}>
-      {filteredOrders.length > 0 ? (
+      {fetchedOrders.length > 0 && currentOrder && currentOrder.IsPaid ? (
         <Card
           title={
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              Order {fetchedOrders[0].TrxRef}
+              Order {currentOrder.TrxRef}
               <span style={{ marginLeft: 'auto', fontSize: '14px' }}>
-                {moment(fetchedOrders[0].CreatedAt).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+                {moment(currentOrder.CreatedAt).format('dddd, MMMM Do YYYY, h:mm:ss a')}
               </span>
             </div>
           }
           style={cardStyle}
         >
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Order ID">{fetchedOrders[0].TrxRef}</Descriptions.Item>
-            <Descriptions.Item label="Customer Description" style={descriptionStyle}>
-              {fetchedOrders[0].Description || 'NIL'}
+            <Descriptions.Item label="Order ID">{currentOrder.TrxRef}</Descriptions.Item>
+            <Descriptions.Item label="Customer Description">
+              {currentOrder.Description}
             </Descriptions.Item>
-            {foodAttended ? (
-              <Descriptions.Item label="Status">
-                <Tag color="green">Attended</Tag>
-              </Descriptions.Item>
-            ) : null}
-            {foodDeclined ? (
-              <Descriptions.Item label="Status">
-                <Tag color="red">Cancelled</Tag>
-              </Descriptions.Item>
-            ) : null}
           </Descriptions>
           <Divider />
           <List
-            dataSource={fetchedOrders[0].Items}
+            dataSource={currentOrder.Items}
             renderItem={(dishItem, index) => (
               <List.Item key={index}>
                 <div style={{ fontWeight: 'bold' }}>
@@ -245,41 +148,35 @@ const Orders = () => {
           <Divider />
           <div style={styles.totalSum}>
             <h2>Total:</h2>
-            <h2 style={styles.totalPrice}>₦{fetchedOrders[0].TotalAmount}</h2>
+            <h2 style={styles.totalPrice}>₦{currentOrder.TotalAmount}</h2>
           </div>
           <Divider />
           <div style={styles.buttonContainer}>
-            {!acceptClicked && !foodAttended && !foodDeclined && (
-              <Button block type="danger" size="large" style={styles.button} onClick={showDeclineModal}>
-                Delay or Decline Order
-              </Button>
+            {fetchedOrders.length > 1 && (
+              !attendedOrders.includes(currentOrder.TrxRef) && (
+                <Button
+                  style={styles.seeNextButton}
+                  onClick={handleAttendButtonClick}
+                >
+                  Attend Order {currentOrder.TrxRef}
+                </Button>
+              )
             )}
-            {!acceptClicked && !foodAttended && !foodDeclined ? (
-              <Button block type="primary" size="large" style={styles.button} onClick={handleAcceptClick}>
-                Accept Order
-              </Button>
-            ) : null}
-            {acceptClicked && !foodAttended && !foodDeclined ? (
-              <Button block type="primary" size="large" onClick={handleFoodPackagedClick}>
-                Food has been Packaged and is now Ready for PickUp
-              </Button>
-            ) : null}
+            {attendedOrders.includes(currentOrder.TrxRef) && (
+              !doneAndPackagedOrders.includes(currentOrder.TrxRef) && (
+                <Button
+                  style={styles.seeNextButton}
+                  onClick={handleDoneAndPackagedButtonClick}
+                >
+                  Done and Packaged
+                </Button>
+              )
+            )}
           </div>
-          <Modal
-            title="Confirm Order Cancellation"
-            open={declineModalVisible}
-            onOk={handleDeclineOrder}
-            onCancel={hideDeclineModal}
-            okText="Yes"
-            cancelText="No"
-            okButtonProps={{ type: 'danger' }}
-          >
-            Are you sure you want to decline this order?
-          </Modal>
         </Card>
       ) : (
         <div style={{ textAlign: 'center', fontSize: '2rem', color: 'grey', marginRight: '7%', marginTop: '20%' }}>
-          {filteredOrders.length === 0 ? 'No delicious orders have arrived just yet. The kitchen awaits its first culinary masterpiece! 🍔🍕🍝' : 'Loading...'}
+          {fetchedOrders.length === 0 ? 'No delicious orders have arrived just yet. The kitchen awaits its first culinary masterpiece! 🍔🍕🍝' : 'Loading...'}
         </div>
       )}
     </div>
@@ -313,9 +210,15 @@ const styles = {
     display: 'flex',
     paddingBottom: 30,
   },
-  button: {
-    marginRight: 20,
-    marginLeft: 20,
+  seeNextButton: {
+    marginLeft: 'auto',
+    marginRight: '10%',
+    background: '#006400',
+    borderColor: '#52c41a',
+    color: 'white',
+    width: '600px',
+    height: '40px',
+    marginLeft: '60px',
   },
 };
 

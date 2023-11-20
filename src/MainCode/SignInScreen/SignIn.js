@@ -30,7 +30,7 @@ function SignIn() {
     }
     try {
       const response = await Signin(payload);
-      // console.log(response);
+      console.log(response);
       if (response.code === 200) {
         localStorage.setItem('userData', JSON.stringify(response.body));
         localStorage.setItem('auth', JSON.stringify(response.extrainfo));
@@ -40,7 +40,7 @@ function SignIn() {
         });
         setUser(response.body);
         setAuth(response.extrainfo)
-        // console.log(response.extrainfo);
+        console.log(response.body);
         navigate('/home');
       } else if(response.message === "Incorrect Password") {
         notification.error({

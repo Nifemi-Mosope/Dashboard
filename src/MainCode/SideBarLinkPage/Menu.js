@@ -251,15 +251,15 @@ const clearLocalStorage = () => {
           </Button>
         </div>
       </div>
-      <Table 
-      dataSource={filteredMenuItems} 
-      style={{ width: '60rem', marginLeft: '5rem' }}
-      pagination={{
-        current: currentPage,
-        pageSize: itemsPerPage,
-        total: menuItems ? menuItems.length : 0,
-        onChange: handlePageChange,
-      }}      
+      <Table
+        dataSource={filteredMenuItems}
+        style={{ width: '60rem', marginLeft: '5rem' }}
+        pagination={{
+          current: currentPage,
+          pageSize: itemsPerPage,
+          total: menuItems ? menuItems.length : 0,
+          onChange: handlePageChange,
+        }}
       >
         <Column title="Food Name" dataIndex="FoodName" key="FoodName" />
         <Column title="Food Category" dataIndex="Category" key="Category" />
@@ -271,7 +271,7 @@ const clearLocalStorage = () => {
           title="Food Status"
           dataIndex="TotalQuantity"
           key="foodStatus"
-          render={(quantity) => (
+          render={(quantity, record) => (
             <Tag color={quantity > 0 ? 'green' : 'red'}>
               {quantity > 0 ? 'available' : 'finished'}
             </Tag>
@@ -286,9 +286,7 @@ const clearLocalStorage = () => {
               <Button type="primary" onClick={() => handleEdit(record)}>
                 Edit
               </Button>
-              <Button type="danger" 
-              onClick={() => handleDelete(record)}
-              >
+              <Button type="danger" onClick={() => handleDelete(record)}>
                 Delete
               </Button>
             </Space>
@@ -355,6 +353,7 @@ const clearLocalStorage = () => {
                   <Select.Option value="Proteins">Proteins</Select.Option>
                   <Select.Option value="Sauce">Sauce</Select.Option>
                   <Select.Option value="Others">Others</Select.Option>
+                  <Select.Option value="Stew">Stew</Select.Option>
                 </>
               )}
 
