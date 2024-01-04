@@ -22,6 +22,12 @@ function DashboardChart({ loading }) {
   const [historicalData, setHistoricalData] = useState([]);
   const { userData, auth } = useMenuContext();
 
+  const getMonthYear = () => {
+    const currentDate = new Date();
+    const monthYearKey = `${currentDate.toLocaleString('default', { month: 'long' })} ${currentDate.getFullYear()}`;
+    return monthYearKey;
+  };
+
   useEffect(() => {
     const fetchDailyRevenues = async () => {
       try {
@@ -30,7 +36,6 @@ function DashboardChart({ loading }) {
         if (response && response.code === 200) {
           const orders = response.body.Orders;
           
-          // Filter the orders to include only paid orders
           const paidOrders = orders.filter(order => order.IsPaid);
           
 
@@ -38,14 +43,12 @@ function DashboardChart({ loading }) {
           setDailyRevenues(dailyRevenueData);
 
 
-          // Calculate the total revenue for the month
           const totalRevenueForMonth = dailyRevenueData.reduce(
             (total, daily) => total + daily,
             0
           );
           setMonthlyRevenue(totalRevenueForMonth);
 
-          // Store historical data
           const currentDate = new Date();
           const monthYearKey = `${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
           const updatedHistoricalData = [...historicalData];
@@ -97,7 +100,7 @@ function DashboardChart({ loading }) {
     plugins: {
       title: {
         display: true,
-        text: 'Daily Revenue',
+        text: `Daily Revenue For ${getMonthYear()}`,
         font: { size: 18 },
       },
       legend: {
@@ -123,6 +126,7 @@ function DashboardChart({ loading }) {
       },
     },
   };
+   
 
   const chartContainerStyle = {
     width: '100%',

@@ -52,23 +52,69 @@ function Dashboard() {
     return 0;
   };
 
+  function calculateTotalRevenue(orders) {
+    if (orders.length === 0) {
+      return 0;
+    }
 
+    return orders.reduce((total, order) => {
+      const orderTotal = parseFloat(order.TotalPrice || 0);
+      return isNaN(orderTotal) ? total : total + orderTotal;
+    }, 0);
+  }
 
+  function calculateMonthlyRevenue(orders) {
+    // Filter orders for the current month with IsPaid === true
+    const currentDate = new Date();
+    const currentMonthOrders = orders.filter((order) => {
+      const orderDate = new Date(order.CreatedAt);
+      return (
+        orderDate.getMonth() === currentDate.getMonth() &&
+        orderDate.getFullYear() === currentDate.getFullYear() &&
+        order.IsPaid === true
+      );
+    });
+  
+    // Calculate total revenue for the current month
+    const totalRevenue = calculateTotalRevenue(currentMonthOrders);
+    return totalRevenue;
+  }
+  
   useEffect(() => {
     const fetchKitchenOrders = async () => {
       try {
         const response = await GetKitchenOrders(userData, auth);
         if (response && response.code === 200) {
           const orders = response.body.Orders;
+          const currentDateTodays = new Date();
+          const currentDateOkay = new Date();
 
-          const paidOrders = orders.filter((order) => order.IsPaid === true);
-    
-          const totalOrdersReceived = paidOrders.length;
-          setTotalOrders(totalOrdersReceived);
+          const currentDayOrders = orders.filter((order) => {
+            const orderDate = new Date(order.CreatedAt);
+            return (
+              orderDate.getDate() === currentDateTodays.getDate() &&
+              orderDate.getMonth() === currentDateTodays.getMonth() &&
+              orderDate.getFullYear() === currentDateTodays.getFullYear()
+            );
+          });
+  
+          const paidOrders = currentDayOrders.filter((order) => order.IsPaid === true);
+          setTotalOrders(paidOrders.length);
 
-          if (paidOrders.length > 0) {
-            const totalRevenueReceived = calculateTotalRevenue(paidOrders);
-            setTotalRevenue(totalRevenueReceived);
+          
+          const currentMonthOrders = orders.filter((order) => {
+            const orderDate = new Date(order.CreatedAt);
+            return (
+              orderDate.getMonth() === currentDateOkay.getMonth() &&
+              orderDate.getFullYear() === currentDateOkay.getFullYear()
+            );
+          });
+
+          const monthlyOrders = currentMonthOrders.filter((order) => order.IsPaid === true);
+          console.log(monthlyOrders, 'Yeah');
+          if (monthlyOrders.length > 0) {
+            const totalRevenueForMonth = calculateTotalRevenue(monthlyOrders);
+            setTotalRevenue(totalRevenueForMonth);
           } else {
             setTotalRevenue(0);
           }
@@ -80,7 +126,7 @@ function Dashboard() {
           const previousDayTotal = getPreviousDayTotalOrders();
 
           const currentDate = new Date();
-          const totalCustomersForCurrentDate = calculateTotalCustomersForCurrentDate(orders, currentDate);
+          const totalCustomersForCurrentDate = calculateTotalCustomersForCurrentDate(orders, currentDate, true);
           setTotalCustomers(totalCustomersForCurrentDate);
 
           const reviewsResponse = await GetReviews(userData, auth);
@@ -106,26 +152,37 @@ function Dashboard() {
           localStorage.setItem('totalRevenue', totalRevenueReceived.toString());
 
           const mostOrderedFoodMap = orders.reduce((foodCountMap, order) => {
-            order.Items.forEach((item) => {
-              const { Name } = item;
-              if (foodCountMap[Name]) {
-                foodCountMap[Name] += 1;
-              } else {
-                foodCountMap[Name] = 1;
-              }
-            });
+            const orderDate = new Date(order.CreatedAt);
+            if (
+              orderDate.getDate() === currentDateToday.getDate() &&
+              orderDate.getMonth() === currentDateToday.getMonth() &&
+              orderDate.getFullYear() === currentDateToday.getFullYear() &&
+              order.IsPaid === true
+            ) {
+              order.Items.forEach((item) => {
+                const { Name } = item;
+                if (foodCountMap[Name]) {
+                  foodCountMap[Name] += 1;
+                } else {
+                  foodCountMap[Name] = 1;
+                }
+              });
+            }
             return foodCountMap;
           }, {});
-
-          const mostOrdered = Object.keys(mostOrderedFoodMap).reduce((mostOrdered, food) => {
-            if (!mostOrdered || mostOrderedFoodMap[food] > mostOrderedFoodMap[mostOrdered]) {
-              return food;
-            }
-            return mostOrdered;
-          }, null);
-
+          
+          const mostOrdered =
+            Object.keys(mostOrderedFoodMap).length > 0
+              ? Object.keys(mostOrderedFoodMap).reduce((mostOrdered, food) => {
+                if (!mostOrdered || mostOrderedFoodMap[food] > mostOrderedFoodMap[mostOrdered]) {
+                return food;
+              }
+                return mostOrdered;
+          }, null)
+          : "NILL";
+          
           setMostOrderedFood(mostOrdered);
-
+          
           setPreviousDayTotalOrders(previousDayTotal);
 
           const previousDayTotalCustomers = getPreviousDayTotalCustomers();
@@ -133,7 +190,7 @@ function Dashboard() {
 
           setPreviousDayTotalRevenue(previousDayTotalRevenue);
 
-          localStorage.setItem('totalOrders', totalOrdersReceived.toString());
+          // localStorage.setItem('totalOrders', totalOrdersReceived.toString());
           localStorage.setItem('totalCustomers', totalCustomersForCurrentDate.toString());
           localStorage.setItem('totalRevenue', totalRevenueReceived.toString());
         } else {
@@ -146,7 +203,6 @@ function Dashboard() {
     fetchKitchenOrders();
   }, [userData.KitchenEmail, auth]);
 
-  // Function to calculate the daily orders count
   function calculateDailyOrders(orders, currentDate) {
     return orders.filter((order) => {
       const orderDate = new Date(order.CreatedAt);
@@ -158,69 +214,90 @@ function Dashboard() {
     }).length;
   }
 
-  function calculateTotalCustomersForCurrentDate(orders, currentDate) {
+  function calculateTotalCustomersForCurrentDate(orders, currentDate, considerPaidOrders) {
     const customerSet = new Set();
-
+  
     orders.forEach((order) => {
-      const { CreatedAt, UserId } = order;
+      const { CreatedAt, UserId, IsPaid } = order;
       const createdAtDate = new Date(CreatedAt);
-
+  
       if (
         createdAtDate.getDate() === currentDate.getDate() &&
         createdAtDate.getMonth() === currentDate.getMonth() &&
-        createdAtDate.getFullYear() === currentDate.getFullYear()
+        createdAtDate.getFullYear() === currentDate.getFullYear() &&
+        (considerPaidOrders ? IsPaid === true : true)
       ) {
         customerSet.add(UserId);
       }
     });
-
+  
     return customerSet.size;
-  }
+  }  
 
   function calculateTotalRevenue(orders) {
     if (orders.length === 0) {
-      return 0; // Return 0 if the orders array is empty
+      return 0;
     }
   
-    return orders.reduce((total, order) => total + parseFloat(order.TotalPrice || 0), 0);
+    // Filter orders where IsPaid is true
+    const paidOrders = orders.filter((order) => order.IsPaid === true);
+  
+    return paidOrders.reduce((total, order) => {
+      const orderTotal = parseFloat(order.TotalAmount || 0);
+      return isNaN(orderTotal) ? total : total + orderTotal;
+    }, 0);
+  }
+
+  const isBasicStaff = userData && userData.Role === 'basic';
+  if (isBasicStaff) {
+    return (
+      <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
+        <Card title="Dashboard" style={{ width: "60rem" }}>
+          <p>You do not have permission to access this page.</p>
+        </Card>
+      </div>
+    );
   }
   
-
   return (
     <div style={{ overflowX: "hidden" }}>
       <Space size={10} direction="vertical">
         <Typography.Title level={3}>Dashboard</Typography.Title>
         <Space size={15} direction="horizontal">
-          <Card style={{ backgroundColor: "#f2f2f2", borderColor: "black", flex: 1 }}>
+          <Card key="orders" style={{ backgroundColor: "#f2f2f2", borderColor: "black", flex: 1 }}>
             <Space direction="horizontal" size={15}>
               <ShoppingCart weight="fill" color="green" size={30} />
               <Statistic title="Orders" value={totalOrders} />
             </Space>
           </Card>
           <DashboardCard
+            key="most-ordered"
             icon={<Hamburger weight="fill" color="green" size={30} />}
             title={"Most Ordered Food"}
             value={mostOrderedFood}
           />
           <DashboardCard
+            key="customers"
             icon={<User weight="fill" color="blue" size={30} />}
             title={"Customers"}
             value={totalCustomers}
             previousValue={previousDayTotalCustomers}
           />
           <DashboardCard
+            key="reviews"
             icon={<Chat weight="fill" color="#c45628" size={30} />}
             title={"Reviews"}
             value={totalReviews}
             previousValue={previousDayTotalReviews}
           />
           <DashboardCard
+            key="revenue"
             icon={<CurrencyNgn weight="fill" color="black" size={30} />}
             title={"Total Revenue"}
             value={totalRevenue}
             previousValue={previousDayTotalRevenue}
           />
-        </Space>
+          </Space>
         <div style={{ display: "flex", flexDirection: "row" }}>
           <RecentOrders />
           <div style={{ marginLeft: "20px" }}>

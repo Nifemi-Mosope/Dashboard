@@ -9,6 +9,8 @@ function Footer() {
     fontWeight: 'bold',
   };
 
+  const WhatsappUrl = `whatsapp://send?phone="09134228578"`
+
   return (
     <div className='Footer'>
       <div className="footer-content">
@@ -17,14 +19,14 @@ function Footer() {
           <Typography.Link href='mailto:nifemiojinni22@gmail.com' style={{marginLeft: '90px', fontFamily: 'sans-serif, OpenSans'}}>Send an Email</Typography.Link>
         </div>
         <div className="social-icons">
-          <a
-            href="https://api.whatsapp.com/send?09134228578"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="social-icon"
-          >
-            <WhatsappLogo style={{ ...iconStyle, color: '#25D366' }} weight='fill' />
-          </a>
+        <a
+          href={WhatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="social-icon"
+        >
+          <WhatsappLogo style={{ ...iconStyle, color: '#25D366' }} weight='fill' />
+        </a>
           <a
             href="https://www.instagram.com/quickeeapp"
             target="_blank"

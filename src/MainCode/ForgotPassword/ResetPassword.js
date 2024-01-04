@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import '../SignUpScreen/signup.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from 'antd';
+import { Button, message } from 'antd';
+import { ResetPasswords } from '../Features/KitchenSlice';
 
 function ResetPassword() {
     const {email} = useParams();
@@ -21,11 +22,28 @@ function ResetPassword() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    navigate('/resetPassword');
-    console.log(formData);
+    try {
+      const payload = {
+        Email: formData.Email,
+        OTP: formData.OTP,
+        NewPassword: formData.NewPassword
+      }
+      const response = await ResetPasswords(payload)
+      if(response.code === 200){
+        message.success(response.message)
+        navigate('/signIn')
+      } else if(response.message === "Wrong OTP"){
+        message.error(response.message)
+      } else if(response.message === "Expired OTP"){
+        message.error(response.message)
+        navigate('/forgotpassword')
+      }
+    } catch (error) {
+      console.log(error?.response?.data)
+      message.error(error?.response?.data?.message)
+    }
   };
   const handleSignInBack = () => {
     navigate('/signIn');

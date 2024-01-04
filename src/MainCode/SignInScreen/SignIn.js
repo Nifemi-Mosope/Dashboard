@@ -40,7 +40,7 @@ function SignIn() {
         });
         setUser(response.body);
         setAuth(response.extrainfo)
-        console.log(response.body);
+        // console.log(response.body);
         navigate('/home');
       } else if(response.message === "Incorrect Password") {
         notification.error({

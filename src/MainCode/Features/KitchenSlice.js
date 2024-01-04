@@ -19,10 +19,8 @@ export async function SignUp(data){
         }
         const path = BASE_PATH + "/Create"
         const response = await axios.post(path, payload)
-        console.log(response)
         return response.data
     } catch(error) {
-        console.log(error?.response?.data)
         return error?.response?.data
     } 
 }
@@ -35,10 +33,8 @@ export async function Signin(data){
         };
         const path = BASE_PATH + "/SignIn"
         const response = await axios.post(path, payload)
-        // console.log("Response", response)
         return response.data
     } catch(error) {
-        console.log(error?.response?.data)
         return error?.response?.data
     }
 }
@@ -51,10 +47,8 @@ export async function VerifyEmail(data){
         };
         const path = BASE_PATH + "/VerifyEmail"
         const response = await axios.put(path, payload)
-        // console.log(response)
         return response.data
     } catch (error) {
-        console.log(error?.response?.data)
         return error?.response?.data
     }
 }
@@ -63,10 +57,8 @@ export async function ResendVerifyEmail(data) {
     try {
         const path = BASE_PATH + `/ResendVerifyEmail?Email=${data.Email}`;
         const response = await axios.get(path, data);
-        console.log(response);
         return response.data;
       } catch (error) {
-        console.log(error?.response?.data)
         return error?.response?.data
       }
 }
@@ -91,11 +83,9 @@ export async function ValidateBank(data) {
         };
 
         const path = BASE_PATH + `/ValidateKitchenBank?Email=${data.KitchenEmail}`;
-        console.log(data.KitchenEmail)
         const response = await axios.post(path, payload);
         return response.data;
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -105,38 +95,36 @@ export async function Forgotpassword(data) {
         const payload = {
             Email: data.Email
         }
-        console.log(payload)
         const path = BASE_PATH + `/ForgotPassword?Email=${data.Email}`;
         const response = await axios.post(path, payload);
         return response.data;
     } catch (error) {
-        console.log(error?.response?.data)
         return error?.response?.data
     }
 }
 
-export async function ResetPassword(data) {
+export async function ResetPasswords(data) {
     try{
+        const payload = {
+            Email: data.Email,
+            OTP: data.OTP,
+            NewPassword: data.NewPassword,
+        }
         const path = BASE_PATH + "/ResetPassword"
-        const response = await axios.put(path, data)
-        console.log(response)
-        return response
+        const response = await axios.put(path, payload)
+        return response.data
     } catch(error) {
-        console.log(error)
+        return error?.response?.data
     }
 }
 
-export async function DeleteStaff(data) {
-    const payload = {
-        Id: data.Id 
-    }
+export async function DeleteStaff(data, auth) {
     try {
-        const path = `${BASE_PATH}/DeleteStaff?Email=${data.Id}`;
-        const response = await axios.delete(path, payload);
-        console.log(response);
+        const path = `${BASE_PATH}/DeleteStaff?Email=${data}`;
+        const response = await axiosWithAuth(auth.accesstoken).delete(path);
         return response;
     } catch (error) {
-        console.log(error);
+        throw error;
     }
 }
 
@@ -151,22 +139,22 @@ export async function CreateMenu(data, auth){
             TotalQuantity: data.TotalQuantity,
             Status: data.Status
         }
-        // console.log(data)
-        // console.log(payload)
         const path = BASE_PATH + "/CreateMenu"
         const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
-        // console.log(response)
         return response.data
     } catch (error) {
-        // console.log("Create Menu Error: ",error?.response?.data)
         return error?.response?.data
     }
 }
 
 export async function GetKitchenMenus(userData, auth) {
     try {
-        if (userData && userData.Id) {
-        const path = BASE_PATH + `/GetKitchenMenus?KitchenId=${userData.Id}`;
+      if (userData && userData.Id) {
+        const isBasicStaff = userData.Role === 'basic';
+  
+        const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+        const path = BASE_PATH + `/GetKitchenMenus?KitchenId=${kitchenId}`;
+  
         const response = await axiosWithAuth(auth.accesstoken).get(path);
         return response.data;
       } else {
@@ -174,31 +162,26 @@ export async function GetKitchenMenus(userData, auth) {
         return null;
       }
     } catch (error) {
-      console.log(error?.response?.data);
       return error?.response?.data;
     }
-}
+}  
 
 export async function DeleteKitchen(data, auth) {
     try {
       const path = BASE_PATH + `/Delete?Email=${data.Email}`;
       const response = await axiosWithAuth(auth.accesstoken).delete(path);
-    //   console.log(response)
       return response.data;
     } catch (error) {
-        console.log(error?.response?.data)
         return error?.response?.data
     }
 }
 
 export async function GetReviews(userData, auth) {
     try {
-        // console.log(auth)
         if (userData && userData.Id) {
         const path = BASE_PATH + `/GetReviewsByKitchenId?KitchenId=${userData.Id}`;
         const response = await axiosWithAuth(auth.accesstoken).get(path);
         if(response){
-            // console.log('Reviews data' , response.data);
             return response.data;
         }
       } else {
@@ -206,25 +189,23 @@ export async function GetReviews(userData, auth) {
         return null;
       }
     } catch (error) {
-      console.log(error?.response?.data);
       return error?.response?.data;
     }
 }
 
-export async function UpdateMenu(data, auth){
+export async function UpdateMenu(menuId, data, auth) {
     try {
-        const payload = {
-            TotalQuantity: data.TotalQuantity,
-            Price: data.Price,
-            Status: data.Status
-        }
-        const path = BASE_PATH + `/UpdateMenu?MenuId=${data.MenusId}`
-        const response = await axiosWithAuth(auth.accesstoken).put(path, payload)
-        console.log(response)
-        return response.data
+      const payload = {
+        TotalQuantity: data.TotalQuantity,
+        Price: data.Price,
+        Status: data.Status,
+      };
+  
+      const path = BASE_PATH + `/UpdateMenu?MenuId=${menuId}`;
+      const response = await axiosWithAuth(auth.accesstoken).put(path, payload);
+      return response.data;
     } catch (error) {
-        console.log(error?.response?.data);
-        return error?.response?.data;
+      return error?.response?.data;
     }
 }
 
@@ -232,10 +213,8 @@ export async function DeleteMenu( auth, menus){
     try {
         const path = BASE_PATH + `/DeleteMenu?MenuId=${menus.Id}`
         const response = await axiosWithAuth(auth.accesstoken).delete(path)
-        // console.log(response)
         return response.data
     } catch (error) {
-        console.log(error?.response?.data);
         return error?.response?.data;
     }
 }
@@ -254,24 +233,19 @@ export async function AddStaff(data, auth) {
         }
         const path = BASE_PATH + "/AddStaff"
         const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
-        console.log(response)
         return response.data
     }
      catch (error) {
-        console.log(error?.response?.data);
         return error?.response?.data;
     }
 }
 
 export async function GetKitchenOrders(data, auth) {
     try {
-        // console.log(data, ' Auth ', auth)
         const path = BASE_PATH + `/GetKitchenOrders?Email=${data.KitchenEmail}`
         const response = await axiosWithAuth(auth.accesstoken).get(path)
-        // console.log( 'Response-1: ' ,response)
         return response.data
     } catch (error) {
-        console.log(error?.response?.data);
         return error?.response?.data;
     }
 }
@@ -281,13 +255,10 @@ export async function UploadImage(data) {
       const payload = new FormData();
       payload.append('file', data.get('image'));
       payload.append('Id', data.get('KitchenId'));
-    //   console.log(payload);
       const path = BASE_PATH + `/Upload?KitchenId=${data.get('KitchenId')}`;
       const response = await axios.post(path, payload);
-      console.log(response);
       return response.data;
     } catch (error) {
-    //   console.log(error?.response?.data);
       return error?.response?.data;
     }
 }
@@ -299,14 +270,12 @@ export async function SendNotification(data, auth) {
             Title: data.Title,
             UserId: data.UserId,
             Message: data.Message,
+            OrderId: data.OrderId,
         }
-        console.log('Me: ' ,payload)
         const path = BASE_PATH + "/SendNotification"
         const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
-        console.log(response.data)
         return response.data
     } catch (error) {
-        console.log(error?.response?.data);
         return error?.response?.data;
     }
 }
@@ -321,10 +290,18 @@ export async function NotifyEveryone(data, auth) {
         }
         const path = BASE_PATH + "/NotifiyAllUsers"
         const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
-        console.log(response.data)
         return response.data
     } catch (error) {
-        console.log(error?.response?.data);
+        return error?.response?.data;
+    }
+}
+
+export async function GetStaff(data, auth) {
+    try {
+        const path = BASE_PATH + `/GetKitchenStaff?Email=${data.KitchenEmail}`
+        const response = await axiosWithAuth(auth.accesstoken).get(path)
+        return response.data
+    } catch (error) {
         return error?.response?.data;
     }
 }

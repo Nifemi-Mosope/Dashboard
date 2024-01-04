@@ -8,7 +8,7 @@ import {
   SendOutlined
 } from "@ant-design/icons";
 import moment from "moment/moment";
-import profileUserImage from '../../components/DashboardComponents/Quickee.jpeg';
+import profileUserImage from '../../components/DashboardComponents/Think.jpeg';
 import { GetReviews } from "../Features/KitchenSlice";
 import { useMenuContext } from "./MenuContext";
 
@@ -130,7 +130,7 @@ function Reviews() {
           reviews.map((review, index) => (
             <div key={index} className="review">
               <div className="user-info">
-                <img src={review.userImage} alt={`${review.Reviewer}'s avatar`} />
+                <img src={newCommentUserImage} alt={`${review.Reviewer}'s avatar`} />
                 <div className="user-details">
                   <span className="username">{review.Reviewer}</span>
                   <span className="date">{moment(review.CreatedAt).format('dddd, MMMM Do YYYY, h:mm:ss a')}</span>
@@ -175,11 +175,11 @@ function Reviews() {
           ))          
         ) : (
           <div style={{fontFamily: 'sans-serif', fontSize: '1.2rem', textAlign: 'center', color: 'grey', marginLeft: '15rem', marginTop: '10rem'}}>
-            No Reviews yet, Click the button on your bottom right to get started
+            No Reviews yet, Wait for your customers to say something about you
           </div>
         )
       )}
-
+{/* 
       {showInput ? (
         <div className="add-comment active">
           <div className="comment-input">
@@ -205,7 +205,7 @@ function Reviews() {
         <button className="add-comment-button" style={{marginTop: '50%', marginLeft: '201%'}} onClick={handleShowInputClick}>
           Say Something...
         </button>
-      )}
+      )} */}
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
 import { UploadOutlined, PlusOutlined, LockOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useMenuContext } from "./MenuContext";
-import { AddStaff, UploadImage, DeleteStaff } from "../Features/KitchenSlice";
+import { AddStaff, UploadImage, DeleteStaff, GetStaff } from "../Features/KitchenSlice";
 
 function Settings() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -52,9 +52,22 @@ function Settings() {
     setIsFormFilled(isFormValid());
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const fetchStaffData = async () => {
+    try {
+      const staffResponse = await GetStaff(userData, auth);
+
+      if (staffResponse.code === 200 && staffResponse.body) {
+        setStaffManagement(staffResponse.body);
+      } else {
+        console.error("Invalid staff response:", staffResponse);
+      }
+    } catch (error) {
+      console.error("Error fetching initial staff data:", error);
+    }
   };
+  useEffect(() => {
+    fetchStaffData();
+  }, []);
 
   const handleUpload = async () => {
     try {
@@ -81,12 +94,6 @@ function Settings() {
       message.error("An error occurred during image upload.");
     }
   }
-  
-
-  const handlePasswordChange = () => {
-    message.success("Password changed successfully");
-    setModalVisible(false);
-  };
 
   const handleAddStaff = async () => {
     setIsAddingStaff(true);
@@ -99,7 +106,7 @@ function Settings() {
       };
   
       const response = await AddStaff(staffData, auth);
-      console.log('StaffLog: ' ,response)
+      // console.log('StaffLog: ' ,response)
       if (response.code === 200) {
         localStorage.setItem('staffs', JSON.stringify(response.body));
         const { FirstName, LastName, Email, Password } = formData;
@@ -112,6 +119,7 @@ function Settings() {
         };
         setStaffs(response.body)
         setStaffManagement([...staffManagement, staffMember]);
+        fetchStaffData()
         message.success("New Staff Added Successfully");
       } else if(response.message === "Staff already exist"){
         message.error("Staff already exist");
@@ -131,21 +139,36 @@ function Settings() {
   };
 
   const handleDeleteStaff = async () => {
-    const payload = {
-      Id: staffs.Id
-    }
-    const response = await DeleteStaff(payload, auth);
-    if (deleteStaffIndex !== null) {
-      const updatedStaffManagement = [...staffManagement];
+    try {
+      const response = await DeleteStaff(staffs.Email, auth);
+      console.log(response, "Deleted Staff");
+  
+      if (response.data === `Staff with id ${staffs.Email} has been deleted!`) {
+        await fetchStaffData();
+        const updatedStaffManagement = [...staffManagement];
       
-      updatedStaffManagement.splice(deleteStaffIndex, 1);
-      setStaffManagement(updatedStaffManagement);
+        updatedStaffManagement.splice(deleteStaffIndex, 1);
+        setStaffManagement(updatedStaffManagement);
 
-      setDeleteConfirmationVisible(false);
-      setDeleteStaffIndex(null);
+        setDeleteConfirmationVisible(false);
+        setDeleteStaffIndex(null);
+      }
+    } catch (error) {
+      console.error("Error deleting staff:", error);
     }
   };
 
+  const isBasicStaff = userData && userData.Role === 'basic';
+  if (isBasicStaff) {
+    return (
+      <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
+        <Card title="Settings" style={{ width: "60rem" }}>
+          <p>You do not have permission to access this page.</p>
+        </Card>
+      </div>
+    );
+  }
+  
   return (
     <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
       <Card title="Settings" style={{ width: "60rem" }}>
@@ -296,8 +319,7 @@ function Settings() {
         onOk={handleDeleteStaff}
         onCancel={() => setDeleteConfirmationVisible(false)}
       >
-        Do you want to delete the staff with username:{" "}
-        {deleteStaffIndex !== null ? staffManagement[deleteStaffIndex].username : ""}?
+        Do you want to delete this staff
       </Modal>
 
       <div style={{ marginTop: "2rem" }}>
@@ -305,16 +327,16 @@ function Settings() {
           <ul>
           {staffManagement.map((staff, index) => (
             <li key={index}>
-            {staff.username} -{" "}
+            {staff.FirstName} {staff.LastName} -{" "}
             {staffShowPasswords[index]
-              ? staff.password
+              ? staff.Email
               : "******"}{" "}
             <Button
               icon={<EyeOutlined />}
               onClick={() => togglePasswordVisibility(index)}
               style={{ marginLeft: "1rem", marginTop: "2%" }}
             >
-              {staffShowPasswords[index] ? "Hide" : "Show"} Password
+              {staffShowPasswords[index] ? "Hide" : "Show"}
             </Button>{" "}
             <Button
               icon={<DeleteOutlined />}
@@ -331,17 +353,6 @@ function Settings() {
 
           </ul>
         </Card>
-        {/* <div style={{ marginTop: "2rem" }}>
-          <Card title="Danger Zone" style={{ width: "60rem", backgroundColor: '#ff0000' }}>
-            <Button
-              type="danger"
-              danger
-              onClick={handleDeleteKitchenProfile}
-            >
-              Delete Kitchen Profile
-            </Button>
-          </Card>
-        </div> */}
       </div>
     </div>
   );

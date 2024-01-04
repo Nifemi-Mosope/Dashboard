@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Table, Tag, Input, Modal } from 'antd';
 import { useMenuContext } from './MenuContext';
 import { GetKitchenOrders } from '../Features/KitchenSlice';
+import { Printer } from 'phosphor-react';
 
 function History() {
   const [searchText, setSearchText] = useState('');
@@ -17,33 +18,52 @@ function History() {
     try {
       const response = await GetKitchenOrders(userData, auth);
       if (response.code === 200) {
-        setKitchenOrders(response.body.Orders);
-        setFilteredKitchenOrders(response.body.Orders);
+        const orders = response.body.Orders;
+  
+        const sortedOrders = orders.sort((a, b) => {
+          const dateA = new Date(a.CreatedAt);
+          const dateB = new Date(b.CreatedAt);
+          return dateB - dateA;
+        });
+  
+        setKitchenOrders(sortedOrders);
+        setFilteredKitchenOrders(sortedOrders);
       }
     } catch (error) {
       console.error('Failed to fetch kitchen orders', error);
     }
   };
+  
 
   useEffect(() => {
     fetchKitchenOrders();
   }, [userData.KitchenEmail, auth]);
 
+  const sortOrders = (orders) => {
+    return orders.sort((a, b) => {
+      const dateA = new Date(a.CreatedAt);
+      const dateB = new Date(b.CreatedAt);
+      return dateB - dateA;
+    });
+  };
+  
   const handleSearch = () => {
     const lowerSearchText = searchText.toLowerCase();
-    const filtered = kitchenOrders.filter(order =>
+    const filtered = kitchenOrders.filter((order) =>
       order.TrxRef.toLowerCase().includes(lowerSearchText)
     );
-    setFilteredKitchenOrders(filtered);
+    const sortedFilteredOrders = sortOrders(filtered);
+    setFilteredKitchenOrders(sortedFilteredOrders);
   };
-
+  
   useEffect(() => {
     if (searchText) {
       handleSearch();
     } else {
-      setFilteredKitchenOrders(kitchenOrders);
+      const sortedOrders = sortOrders(kitchenOrders);
+      setFilteredKitchenOrders(sortedOrders);
     }
-  }, [searchText, kitchenOrders]);
+  }, [searchText, kitchenOrders]);  
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -72,7 +92,18 @@ function History() {
 
   const renderOrderDate = (date) => {
     const orderDate = new Date(date);
-    return orderDate.toDateString();
+  
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+    };
+  
+    return orderDate.toLocaleString(undefined, options);
   };
 
   const tableColumns = [
@@ -131,6 +162,29 @@ function History() {
     setIsModalVisible(false);
   };
 
+  const handlePrint = () => {
+    if (selectedOrder) {
+      const contentToPrint = `
+        Order ID: ${selectedOrder.TrxRef} <br>
+        Date: ${renderOrderDate(selectedOrder.CreatedAt)}
+      `;
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+          </head>
+          <body>
+            ${contentToPrint}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
   return (
     <div style={{ marginLeft: '5%' }}>
       <Input.Search
@@ -164,6 +218,7 @@ function History() {
         onCancel={handleModalClose}
         footer={null}
       >
+        <Printer onClick={handlePrint} style={{ cursor: 'pointer' }} size={50} color='green'/>
         {selectedOrder && (
           <div>
             <p>Order ID: {selectedOrder.TrxRef}</p>

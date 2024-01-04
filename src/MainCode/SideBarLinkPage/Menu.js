@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Input, Button, Space, Tag, Form, Modal, Select, Alert, message } from 'antd';
 import { useMenuContext } from './MenuContext';
 import { CreateMenu, UpdateMenu, DeleteMenu, GetKitchenMenus } from '../Features/KitchenSlice';
+import moment from 'moment';
 
 const { Column } = Table;
 const { Search } = Input;
@@ -48,6 +49,14 @@ const MenuScreen = () => {
       setLoadingMenus(false);
     }
   };
+  
+  useEffect(() => {
+    fetchMenus();
+  
+    const intervalId = setInterval(fetchMenus, 5000);
+  
+    return () => clearInterval(intervalId);
+  }, [userData.Id, auth]);  
 
   //Items to show in a table not to cause TMI
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -56,9 +65,6 @@ const MenuScreen = () => {
     setCurrentPage(page);
   };
 
-  useEffect(() => {
-    fetchMenus();
-  }, [userData.Id, auth]);
 
   const handleFormSubmit = async (values) => {
     setLoading(true);
@@ -101,7 +107,7 @@ const MenuScreen = () => {
 
           setMenuItems(updatedMenuItems);
           message.success('Menu item created successfully.');
-          console.log(response);
+          // console.log(response);
         }
         fetchMenus();
         closeModal();
@@ -116,8 +122,7 @@ const MenuScreen = () => {
       setLoading(false);
     }
   };
-  
-  
+
   const handleEdit = (record) => {
     setEditItem(record);
     setEditModalVisible(true);
@@ -135,7 +140,7 @@ const MenuScreen = () => {
       onOk: async () => {
         try {
           const response = await DeleteMenu(auth, record);
-          console.log(response);
+          // console.log(response);
           if (response.message === `FoodMenu with id ${MenuId} has been deleted!`) {
             const updatedMenuItems = menuItems.filter((item) => item.key !== record.key);
             setMenuItems(updatedMenuItems);
@@ -159,31 +164,36 @@ const MenuScreen = () => {
     });
   };
 
-  console.log('Okay' , menus)
+  // console.log('Okay' , menus)
   const menusData = menus || [];
 
-  // Access properties of menusData safely
-  const MenuId = menusData.Id; // Access the Id property
+  const MenuId = menusData.Id;
 
-  console.log('This is me ', MenuId);
-  console.log(menusData)
+  // console.log('This is me ', MenuId);
+  // console.log(menusData)
        
   const handleEditFormSubmit = async (values) => {
     setLoading(true);
     try {
+      const menuId = editItem ? editItem.key : null;
+  
+      if (!menuId) {
+        console.error('MenuId is undefined or null.');
+        return;
+      }
+  
       const payload = {
         TotalQuantity: values.TotalQuantity,
         Price: values.Price,
         Status: values.TotalQuantity > 0 ? 'available' : 'finished',
-        MenusId: MenuId,
       };
   
-      const response = await UpdateMenu(payload, auth);
+      const response = await UpdateMenu(menuId, payload, auth);
   
       if (response) {
         if (response.code === 200) {
           const updatedMenuItems = menuItems.map((item) => {
-            if (item.key === MenuId) {
+            if (item.key === menuId) {
               return {
                 ...item,
                 Price: values.Price,
@@ -194,7 +204,6 @@ const MenuScreen = () => {
             return item;
           });
   
-          // Update local storage with the entire updated array
           localStorage.setItem('menus', JSON.stringify(updatedMenuItems));
   
           setMenuItems(updatedMenuItems);
@@ -216,12 +225,14 @@ const MenuScreen = () => {
       setEditModalVisible(false);
     }
   };
-  
-
-  const filteredMenuItems = menuItems ? menuItems.filter((item) =>
-  item.FoodName && item.FoodName.toLowerCase().includes(searchText.toLowerCase())
-) : [];
-
+      
+  const filteredMenuItems = menuItems
+  ? menuItems
+      .filter((item) =>
+        item.FoodName && item.FoodName.toLowerCase().includes(searchText.toLowerCase())
+      )
+      .map((item) => ({ ...item, key: item.Id }))
+  : [];
 
 const handleInputChange = (e) => {
   const { name, value } = e.target;
@@ -261,16 +272,16 @@ const clearLocalStorage = () => {
           onChange: handlePageChange,
         }}
       >
-        <Column title="Food Name" dataIndex="FoodName" key="FoodName" />
-        <Column title="Food Category" dataIndex="Category" key="Category" />
-        <Column title="Food Price (Naira)" dataIndex="Price" key="Price" />
-        <Column title="Food Quantity" dataIndex="TotalQuantity" key="TotalQuantity" />
-        <Column title="Food Class" dataIndex="Class" key="Class" />
+        <Column title="Food Name" dataIndex="FoodName" key="key" />
+        <Column title="Food Category" dataIndex="Category" key="key" />
+        <Column title="Food Price (Naira)" dataIndex="Price" key="key" />
+        <Column title="Food Quantity" dataIndex="TotalQuantity" key="key" />
+        <Column title="Food Class" dataIndex="Class" key="key" />
 
         <Column
           title="Food Status"
           dataIndex="TotalQuantity"
-          key="foodStatus"
+          key="key"
           render={(quantity, record) => (
             <Tag color={quantity > 0 ? 'green' : 'red'}>
               {quantity > 0 ? 'available' : 'finished'}
@@ -330,6 +341,7 @@ const clearLocalStorage = () => {
               <Select.Option value="Food">Food</Select.Option>
               <Select.Option value="Snacks">Snacks</Select.Option>
               <Select.Option value="Drinks">Drinks</Select.Option>
+              <Select.Option value="Package">Package</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item
@@ -375,6 +387,12 @@ const clearLocalStorage = () => {
                   <Select.Option value="Yoghurt">Yoghurt</Select.Option>
                   <Select.Option value="Bottle Water">Bottle Water</Select.Option>
                   <Select.Option value="Others">Others</Select.Option>
+                </>
+              )}
+
+              {formData.Category === 'Package' && (
+                <>
+                  <Select.Option value="Takeaway">Takeaway</Select.Option>
                 </>
               )}
             </Select>

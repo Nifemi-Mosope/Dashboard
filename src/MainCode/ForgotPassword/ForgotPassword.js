@@ -28,7 +28,7 @@ function ForgotPassword() {
       };
       const response = await Forgotpassword(payload);
       console.log(response);
-      console.log(payload)
+      // console.log(payload)
   
       if (response.code === 200) {
         notification.success({
@@ -68,7 +68,7 @@ function ForgotPassword() {
       </div>
       <div className="rectangle">
         <div>
-          <h2 style={{ textAlign: 'center', marginTop: '0%', fontFamily: 'sans-serif' }}>Forgot Passowrd</h2>
+          <h2 style={{ textAlign: 'center', marginTop: '0%', fontFamily: 'sans-serif' }}>Forgot Password</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <label htmlFor="Email" style={{fontFamily: 'sans-serif'}}>Email</label>
