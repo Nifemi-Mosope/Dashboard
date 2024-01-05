@@ -31,7 +31,7 @@ const MenuScreen = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
 
-  // console.log(menus)
+  // console.log(userData)
 
   const fetchMenus = async () => {
     try {
@@ -74,8 +74,8 @@ const MenuScreen = () => {
         Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
       };
 
-      const response = await CreateMenu(newValues, auth);
-
+      const response = await CreateMenu(newValues, auth, userData);
+      console.log(response);
       if (response.code === 200) {
         if (editItem) {
           const updatedMenuItems = menuItems.map((item) => {

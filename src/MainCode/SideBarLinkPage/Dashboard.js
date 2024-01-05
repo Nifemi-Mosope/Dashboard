@@ -111,7 +111,6 @@ function Dashboard() {
           });
 
           const monthlyOrders = currentMonthOrders.filter((order) => order.IsPaid === true);
-          console.log(monthlyOrders, 'Yeah');
           if (monthlyOrders.length > 0) {
             const totalRevenueForMonth = calculateTotalRevenue(monthlyOrders);
             setTotalRevenue(totalRevenueForMonth);

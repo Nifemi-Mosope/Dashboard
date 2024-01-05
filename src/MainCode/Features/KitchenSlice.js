@@ -128,10 +128,14 @@ export async function DeleteStaff(data, auth) {
     }
 }
 
-export async function CreateMenu(data, auth){
+export async function CreateMenu(data, auth, userData){
     try {
+        console.log(data)
+
+        const isBasicStaff = userData.Role === 'basic';
+        const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
         const payload = {
-            KitchenId: data.KitchenId,
+            KitchenId: kitchenId,
             FoodName: data.FoodName,
             Category: data.Category,
             Class: data.Class,
@@ -139,6 +143,7 @@ export async function CreateMenu(data, auth){
             TotalQuantity: data.TotalQuantity,
             Status: data.Status
         }
+
         const path = BASE_PATH + "/CreateMenu"
         const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
         return response.data

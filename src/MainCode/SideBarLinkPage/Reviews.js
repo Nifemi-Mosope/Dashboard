@@ -29,7 +29,6 @@ function Reviews() {
       try {
         if (userData.Id) {
           const response = await GetReviews(userData, auth);
-          console.log(response.body);
   
           if (Array.isArray(response.body) && response.body.length > 0) {
             setReviews(response.body);

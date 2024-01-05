@@ -74,7 +74,6 @@ const Orders = () => {
   const fetchOrders = async () => {
     try {
       const fetchedOrdersResponse = await GetKitchenOrders(userData, auth);
-      console.log('Okay' ,fetchedOrdersResponse);
       if (fetchedOrdersResponse.code === 200) {
         setFetchedOrders(fetchedOrdersResponse.body.Orders);
         const orders = fetchedOrdersResponse.body.Orders;
