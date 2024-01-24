@@ -1,11 +1,10 @@
-// PageContent.js
 import React from 'react';
-import Dashboard from '../../MainCode/SideBarLinkPage/Dashboard';
-import Orders from '../../MainCode/SideBarLinkPage/Order';
-import History from '../../MainCode/SideBarLinkPage/OrderHistory';
-import Reviews from '../../MainCode/SideBarLinkPage/Reviews';
-import Menus from '../../MainCode/SideBarLinkPage/Menu';
-import Settings from '../../MainCode/SideBarLinkPage/Settings';
+import Dashboard from '../../MainCode/SideBarLinkPage/Others/Dashboard';
+import Orders from '../../MainCode/SideBarLinkPage/Orders/Order';
+import History from '../../MainCode/SideBarLinkPage/Orders/OrderHistory';
+import Reviews from '../../MainCode/SideBarLinkPage/Reviews/Reviews';
+import Menus from '../../MainCode/SideBarLinkPage/Menus/Menu';
+import Settings from '../../MainCode/SideBarLinkPage/Others/Settings';
 
 function PageContent({ selectedMenuItem }) {
   return (

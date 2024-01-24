@@ -3,7 +3,7 @@ import '../SignUpScreen/signup.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { Signin } from '../Features/KitchenSlice';
 import { notification } from 'antd';
-import { useMenuContext } from '../SideBarLinkPage/MenuContext';
+import { useMenuContext } from '../SideBarLinkPage/Menus/MenuContext';
 
 function SignIn() {
   const [formData, setFormData] = useState({
@@ -30,7 +30,6 @@ function SignIn() {
     }
     try {
       const response = await Signin(payload);
-      console.log(response);
       if (response.code === 200) {
         localStorage.setItem('userData', JSON.stringify(response.body));
         localStorage.setItem('auth', JSON.stringify(response.extrainfo));

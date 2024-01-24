@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Input, Button, Space, Tag, Form, Modal, Select, Alert, message } from 'antd';
 import { useMenuContext } from './MenuContext';
-import { CreateMenu, UpdateMenu, DeleteMenu, GetKitchenMenus } from '../Features/KitchenSlice';
+import { CreateMenu, UpdateMenu, DeleteMenu, GetKitchenMenus } from '../../Features/KitchenSlice';
 import moment from 'moment';
 
 const { Column } = Table;

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from 'antd';
 import { Line } from 'react-chartjs-2';
 import { GetKitchenOrders } from '../../MainCode/Features/KitchenSlice';
-import { useMenuContext } from '../../MainCode/SideBarLinkPage/MenuContext';
+import { useMenuContext } from '../../MainCode/SideBarLinkPage/Menus/MenuContext';
 
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 

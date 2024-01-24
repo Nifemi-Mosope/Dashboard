@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Space, Statistic, Table, Typography } from "antd";
 import { GetKitchenOrders } from "../../MainCode/Features/KitchenSlice";
-import { useMenuContext } from "../../MainCode/SideBarLinkPage/MenuContext";
-
+import { useMenuContext } from "../../MainCode/SideBarLinkPage/Menus/MenuContext";
 function RecentOrders() {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);

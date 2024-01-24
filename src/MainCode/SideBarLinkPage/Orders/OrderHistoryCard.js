@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Descriptions, Divider, List, Tag } from 'antd';
 import moment from 'moment';
-import { useMenuContext } from './MenuContext';
+import { useMenuContext } from '../Menus/MenuContext';
 
 function OrderHistoryCard({ order }) {
   const { orderHistory } = useMenuContext();

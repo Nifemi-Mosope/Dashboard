@@ -1,10 +1,10 @@
 import { Card, Space, Statistic, Typography } from "antd";
 import { Chat, CurrencyNgn, Hamburger, ShoppingCart, User } from "phosphor-react";
-import DashboardChart from "../../components/DashboardComponents/DashboardChart";
-import RecentOrders from "../../components/DashboardComponents/RecentOrders";
+import RecentOrders from "../../../components/DashboardComponents/RecentOrders";
+import DashboardChart from "../../../components/DashboardComponents/DashboardChart";
 import { useEffect, useState } from "react";
-import { GetKitchenOrders, GetReviews } from "../Features/KitchenSlice";
-import { useMenuContext } from "./MenuContext";
+import { GetKitchenOrders, GetReviews } from "../../Features/KitchenSlice";
+import { useMenuContext } from "../Menus/MenuContext";
 
 function Dashboard() {
   const [mostOrderedFood, setMostOrderedFood] = useState("");
@@ -61,23 +61,6 @@ function Dashboard() {
       const orderTotal = parseFloat(order.TotalPrice || 0);
       return isNaN(orderTotal) ? total : total + orderTotal;
     }, 0);
-  }
-
-  function calculateMonthlyRevenue(orders) {
-    // Filter orders for the current month with IsPaid === true
-    const currentDate = new Date();
-    const currentMonthOrders = orders.filter((order) => {
-      const orderDate = new Date(order.CreatedAt);
-      return (
-        orderDate.getMonth() === currentDate.getMonth() &&
-        orderDate.getFullYear() === currentDate.getFullYear() &&
-        order.IsPaid === true
-      );
-    });
-  
-    // Calculate total revenue for the current month
-    const totalRevenue = calculateTotalRevenue(currentMonthOrders);
-    return totalRevenue;
   }
   
   useEffect(() => {

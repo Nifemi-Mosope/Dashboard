@@ -3,7 +3,7 @@ import './dash.css';
 import { Menu, Modal } from 'antd';
 import { AppstoreOutlined, SettingOutlined, LogoutOutlined } from '@ant-design/icons';
 import { ChatCircleDots, ClockCounterClockwise, CookingPot, ShoppingCart } from 'phosphor-react';
-import { useMenuContext } from '../../MainCode/SideBarLinkPage/MenuContext';
+import { useMenuContext } from '../../MainCode/SideBarLinkPage/Menus/MenuContext';
 import { useNavigate } from 'react-router-dom';
 
 function Sidebar({ setSelectedMenuItem }) {
@@ -18,7 +18,7 @@ function Sidebar({ setSelectedMenuItem }) {
     };
     
     const handleLogout = () => {
-        setUser(null); // Clear user data
+        setUser(null);
         setLogoutModalVisible(false);
         navigate('/signIn')
       };
@@ -77,7 +77,7 @@ function Sidebar({ setSelectedMenuItem }) {
                         onClick: showLogoutModal,
                     }
                 ]}
-                style={{ height: '688px' }}
+                // style={{ height: '1088px' }}
             ></Menu>
             {logoutModal}
         </div>

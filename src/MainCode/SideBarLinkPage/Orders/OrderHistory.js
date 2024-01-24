@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Tag, Input, Modal } from 'antd';
-import { useMenuContext } from './MenuContext';
-import { GetKitchenOrders } from '../Features/KitchenSlice';
+import { Card, Table, Tag, Input, Modal, message } from 'antd';
+import { useMenuContext } from '../Menus/MenuContext';
+import { GetKitchenOrders } from '../../Features/KitchenSlice';
 import { Printer } from 'phosphor-react';
 
 function History() {
@@ -20,7 +20,9 @@ function History() {
       if (response.code === 200) {
         const orders = response.body.Orders;
   
-        const sortedOrders = orders.sort((a, b) => {
+        const paidOrders = orders.filter(order => order.IsPaid === true);
+  
+        const sortedOrders = paidOrders.sort((a, b) => {
           const dateA = new Date(a.CreatedAt);
           const dateB = new Date(b.CreatedAt);
           return dateB - dateA;
@@ -30,11 +32,11 @@ function History() {
         setFilteredKitchenOrders(sortedOrders);
       }
     } catch (error) {
-      console.error('Failed to fetch kitchen orders', error);
+      message.error('Failed to fetch kitchen orders');
     }
   };
   
-
+  
   useEffect(() => {
     fetchKitchenOrders();
   }, [userData.KitchenEmail, auth]);
@@ -150,6 +152,16 @@ function History() {
       render: (text, record) => (
         `₦${text}`
       )
+    },
+    {
+      title: 'Attended',
+      dataIndex: 'IsAttended',
+      key: 'IsAttended',
+      render: (isAttended) => (
+        <Tag color={isAttended ? 'green' : 'red'}>
+          {isAttended ? 'Attended' : 'Not Attended'}
+        </Tag>
+      ),
     },
   ];
 

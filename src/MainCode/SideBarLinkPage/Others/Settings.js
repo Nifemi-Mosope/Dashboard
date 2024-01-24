@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
 import { UploadOutlined, PlusOutlined, LockOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
-import { useMenuContext } from "./MenuContext";
-import { AddStaff, UploadImage, DeleteStaff, GetStaff } from "../Features/KitchenSlice";
+import { useMenuContext } from "../Menus/MenuContext";
+import { AddStaff, UploadImage, DeleteStaff, GetStaff } from "../../Features/KitchenSlice";
 
 function Settings() {
   const [modalVisible, setModalVisible] = useState(false);

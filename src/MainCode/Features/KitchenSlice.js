@@ -130,8 +130,6 @@ export async function DeleteStaff(data, auth) {
 
 export async function CreateMenu(data, auth, userData){
     try {
-        console.log(data)
-
         const isBasicStaff = userData.Role === 'basic';
         const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
         const payload = {
@@ -184,7 +182,10 @@ export async function DeleteKitchen(data, auth) {
 export async function GetReviews(userData, auth) {
     try {
         if (userData && userData.Id) {
-        const path = BASE_PATH + `/GetReviewsByKitchenId?KitchenId=${userData.Id}`;
+        const isBasicStaff = userData.Role === 'basic';
+  
+        const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+        const path = BASE_PATH + `/GetReviewsByKitchenId?KitchenId=${kitchenId}`;
         const response = await axiosWithAuth(auth.accesstoken).get(path);
         if(response){
             return response.data;
@@ -285,10 +286,13 @@ export async function SendNotification(data, auth) {
     }
 }
 
-export async function NotifyEveryone(data, auth) {
+export async function NotifyEveryone(data, auth, userData) {
     try {
+        const isBasicStaff = userData.Role === 'basic';
+        const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+
         const payload = {
-            KitchenId: data.KitchenId,
+            KitchenId: kitchenId,
             Title: data.Title,
             UserId: data.UserId,
             Message: data.Message,

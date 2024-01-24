@@ -1,13 +1,12 @@
-// Import necessary dependencies
 import React, { useState, useEffect } from 'react';
 import './dash.css';
 import quickeeImage from './Quickee.jpeg';
 import { Badge, Image, Rate, Space, Typography, Modal, Button, Input } from 'antd';
 import { MailOutlined, BellFilled } from '@ant-design/icons';
-import { useMenuContext } from '../../MainCode/SideBarLinkPage/MenuContext';
+import { useMenuContext } from '../../MainCode/SideBarLinkPage/Menus/MenuContext';
 import { GetReviews, NotifyEveryone } from '../../MainCode/Features/KitchenSlice';
+import { message } from 'antd';
 
-// Header component
 function Header() {
   const { userData, auth } = useMenuContext();
   const [totalReviews, setTotalReviews] = useState(0);
@@ -25,7 +24,7 @@ function Header() {
 
   const getKitchenImageUrl = () => {
     if (userData && userData.KitchenImage) {
-      return `http://192.168.221.144:85/Uploads/${userData.KitchenImage}`;
+      return `http://192.168.66.144:85/Uploads/${userData.KitchenImage}`;
     }
     return quickeeImage;
   };
@@ -42,18 +41,23 @@ function Header() {
 
   const handleModalOk = async () => {
     const payload = {
-      KitchenId: userData.Id,
       Title: notificationTitle,
       UserId: 'abcd',
       Message: notificationMessage,
     }
     try {
-      const response = await NotifyEveryone(payload, auth)
-      console.log(response)
+      const response = await NotifyEveryone(payload, auth, userData)
+      if(response.code === 200){
+        message.success("Notification sent successfully")
+        setIsModalVisible(false);
+      } else {
+        message.error("Error sending notification")
+      }
     } catch (error) {
       console.log(error?.response?.data);
+      message.error("Internal Server Error")
     }
-    setIsModalVisible(false);
+    // setIsModalVisible(false);
   };
   
   // Handle modal Cancel button click
@@ -83,7 +87,6 @@ function Header() {
           const totalReviewsReceived = reviewsResponse ? reviewsResponse.length : 0;
           setTotalReviews(totalReviewsReceived);
           
-          // Check if reviewsResponse is not null before performing reduce
           if (reviewsResponse && Array.isArray(reviewsResponse)) {
             const totalAgree = reviewsResponse.reduce((total, review) => total + parseInt(review.AgreeCount), 0);
             const totalDisagree = reviewsResponse.reduce((total, review) => total + parseInt(review.DisagreeCount), 0);

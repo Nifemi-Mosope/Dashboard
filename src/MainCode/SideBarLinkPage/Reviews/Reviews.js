@@ -8,9 +8,9 @@ import {
   SendOutlined
 } from "@ant-design/icons";
 import moment from "moment/moment";
-import profileUserImage from '../../components/DashboardComponents/Think.jpeg';
-import { GetReviews } from "../Features/KitchenSlice";
-import { useMenuContext } from "./MenuContext";
+import profileUserImage from '../../../components/DashboardComponents/Think.jpeg';
+import { GetReviews } from "../../Features/KitchenSlice";
+import { useMenuContext } from "../Menus/MenuContext";
 
 function Reviews() {
   const [reviews, setReviews] = useState([]);
