@@ -37,26 +37,29 @@ const MenuScreen = () => {
     try {
       setLoadingMenus(true);
       const response = await GetKitchenMenus(userData, auth);
+  
       if (response.code === 200) {
-        setMenuItems(response.body);
+        const menuItemsArray = response.body || []; // Ensure menuItemsArray is not null or undefined
+        const sortedMenus = menuItemsArray.sort((a, b) => {
+          return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
+        });
+        setMenuItems(sortedMenus);
       } else {
         message.error('Failed to fetch menus');
       }
+  
       setLoadingMenus(false);
     } catch (error) {
       console.error(error);
       message.error('Internal Server Error', error);
       setLoadingMenus(false);
     }
-  };
+  };  
   
-  useEffect(() => {
-    fetchMenus();
-  
-    const intervalId = setInterval(fetchMenus, 5000);
-  
+  useEffect(() => {  
+    const intervalId = setInterval(fetchMenus, 2000);
     return () => clearInterval(intervalId);
-  }, [userData.Id, auth]);  
+  }, []);  
 
   //Items to show in a table not to cause TMI
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -72,6 +75,7 @@ const MenuScreen = () => {
       const newValues = {
         ...formData,
         Status: formData.TotalQuantity > 0 ? 'available' : 'finished',
+        CreatedAt: moment().toISOString(),
       };
 
       const response = await CreateMenu(newValues, auth, userData);

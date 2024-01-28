@@ -7,7 +7,7 @@ import { useMenuContext } from '../../MainCode/SideBarLinkPage/Menus/MenuContext
 import { useNavigate } from 'react-router-dom';
 
 function Sidebar({ setSelectedMenuItem }) {
-    const {setUser} = useMenuContext()
+    const {setUser, logout} = useMenuContext()
     const navigate = useNavigate();
     const handleMenuItemClick = (item) => {
         setSelectedMenuItem(item.key);
@@ -20,6 +20,7 @@ function Sidebar({ setSelectedMenuItem }) {
     const handleLogout = () => {
         setUser(null);
         setLogoutModalVisible(false);
+        logout()
         navigate('/signIn')
       };
     const logoutModal = (

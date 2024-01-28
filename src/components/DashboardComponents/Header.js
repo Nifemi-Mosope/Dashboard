@@ -24,7 +24,7 @@ function Header() {
 
   const getKitchenImageUrl = () => {
     if (userData && userData.KitchenImage) {
-      return `http://192.168.66.144:85/Uploads/${userData.KitchenImage}`;
+      return `http://192.168.241.144:85/Uploads/${userData.KitchenImage}`;
     }
     return quickeeImage;
   };
@@ -100,7 +100,7 @@ function Header() {
     };
   
     fetchReviews();
-  }, [userData.Id, auth]);  
+  }, [userData?.Id, auth]);  
 
   const kitchenRating = calculateKitchenRating();
   const isBasicStaff = userData && userData.Role === 'basic';

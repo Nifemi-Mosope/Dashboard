@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Descriptions, Divider, List, Button, Modal, message, Tag, Input, Collapse, Select } from 'antd';
+import { Card, Descriptions, Divider, List, Button, Modal, message, Tag, Input, Collapse, Select, notification } from 'antd';
 import { useMenuContext } from '../Menus/MenuContext';
 import moment from 'moment';
 import { GetKitchenOrders, SendNotification } from '../../Features/KitchenSlice';
 import { ChatCircleDots } from 'phosphor-react';
+import { onMessage } from 'firebase/messaging';
+import { messaging } from '../../notifcations/firebase';
 const { Panel } = Collapse;
 const { Option } = Select;
 
@@ -113,12 +115,12 @@ const Orders = () => {
     } catch (error) {
       message.error('Failed to fetch orders, check your internet connection');
     }
-  };
+  };  
 
   useEffect(() => {
-    fetchOrders();
-    // const intervalId = setInterval(fetchOrders, 2000);
-    // return () => clearInterval(intervalId);
+    // fetchOrders();
+    const intervalId = setInterval(fetchOrders, 2000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleDoneAndPackagedButtonClick = async () => {
@@ -171,6 +173,31 @@ const Orders = () => {
   const handlePrevPage = () => {
     setCurrentOrderIndex(Math.max(0, currentOrderIndex - ordersPerPage));
   };
+
+  //Firebase Notification i hope it works
+  useEffect(() => {
+    onMessage(messaging, async(payload) => {
+      console.log('Message received. ', payload);
+      try {
+        const newOrders = await GetKitchenOrders(userData, auth);
+        console.log("New orders: ", newOrders);
+        if(newOrders.code === 200){
+          const newOrdersData = newOrders.body.Orders;
+          if(newOrdersData && newOrdersData.length > 0){
+            console.log("New orders received: ", newOrders);
+            const notifications = new Notification("New Order", {
+              body: `You have ${newOrders.length} new order(s)!`,
+            });
+            notification.open(notifications)
+            const audio = new Audio("/message_tone.mp3");
+            audio.play();
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching new orders:', error);
+      }
+    })
+  }, [userData, auth])
 
   return (
     <div style={{ marginLeft: '7rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

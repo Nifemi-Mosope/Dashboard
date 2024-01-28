@@ -61,8 +61,24 @@ export function MenuProvider({ children }) {
     setOrderHistory((prevOrderHistory) => [...prevOrderHistory, order]);
   };
 
+  const logout = () => {
+    localStorage.removeItem('userData');
+    localStorage.removeItem('auth');
+    localStorage.removeItem('menus');
+    localStorage.removeItem('staffs');
+    localStorage.removeItem('Image');
+    localStorage.removeItem('fetchedOrders');
+    setUserData(null);
+    setAuth(null);
+    setMenus(null);
+    setStaffs(null);
+    setImage(null);
+    setFetchedOrders(null);
+    window.location.reload();
+  }
+
   return (
-    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, currentOrders, removeOrderAndAddToHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage, fetchedOrders, setFetchedOrders, updateOrderHistory, addToOrderHistory }}>
+    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, currentOrders, removeOrderAndAddToHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage, fetchedOrders, setFetchedOrders, updateOrderHistory, addToOrderHistory, logout }}>
       {children}
     </MenuContext.Provider>
   );
