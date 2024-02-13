@@ -30,6 +30,7 @@ function SignIn() {
     }
     try {
       const response = await Signin(payload);
+      console.log(response);
       if (response.code === 200) {
         localStorage.setItem('userData', JSON.stringify(response.body));
         localStorage.setItem('auth', JSON.stringify(response.extrainfo));

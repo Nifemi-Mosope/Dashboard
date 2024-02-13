@@ -4,8 +4,6 @@ import { useMenuContext } from '../Menus/MenuContext';
 import moment from 'moment';
 import { GetKitchenOrders, SendNotification } from '../../Features/KitchenSlice';
 import { ChatCircleDots } from 'phosphor-react';
-import { onMessage } from 'firebase/messaging';
-import { messaging } from '../../notifcations/firebase';
 const { Panel } = Collapse;
 const { Option } = Select;
 
@@ -21,6 +19,8 @@ const Orders = () => {
   const [orderNumber, setOrderNumber] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [attendedFilter, setAttendedFilter] = useState(null);
+  const audioRef = useRef(null);
+  const animationRef = useRef(null);
 
   const handleAttendedFilterChange = (value) => {
     setAttendedFilter(value);
@@ -50,23 +50,28 @@ const Orders = () => {
   };
 
   const handleSendMessage = async () => {
+    const updatedOrder = {
+      ...currentOrder,
+      IsAttended: false,
+    };
+  
     let notificationData;
   
     if (userData && userData.Role === 'basic') {
       notificationData = {
         KitchenId: userData.KitchenId,
         Title: `${userData.FirstName} (staff)`,
-        UserId: currentOrder.UserId,
+        UserId: updatedOrder.UserId,
         Message: messageInput,
-        OrderId: currentOrder.TrxRef,
+        OrderId: updatedOrder.TrxRef,
       };
     } else {
       notificationData = {
         KitchenId: userData.Id,
         Title: userData.KitchenName,
-        UserId: currentOrder.UserId,
+        UserId: updatedOrder.UserId,
         Message: messageInput,
-        OrderId: currentOrder.TrxRef,
+        OrderId: updatedOrder.TrxRef,
       };
     }
   
@@ -74,43 +79,60 @@ const Orders = () => {
   
     if (notificationResponse && notificationResponse.code === 200) {
       message.success("Notification sent successfully");
-      fetchOrders()
+      // Fetch updated orders from the server
+      fetchOrders();
     } else {
       message.error("Notification wasn't sent");
     }
   
     setChatModalVisible(false);
-  };  
+  };    
 
   useEffect(() => {
-    const storedOrders = localStorage.getItem('orders');
-    if (storedOrders) {
+    const fetchData = async () => {
       try {
-        const parsedOrders = JSON.parse(storedOrders);
-        setOrders(parsedOrders);
+        const storedOrders = localStorage.getItem('orders');
+        if (storedOrders) {
+          try {
+            const parsedOrders = JSON.parse(storedOrders);
+            setOrders(parsedOrders);
+          } catch (error) {
+            console.error('Failed to parse stored orders:', error);
+          }
+        }
       } catch (error) {
-        console.error('Failed to parse stored orders:', error);
+        console.error('Failed to fetch orders:', error);
       }
-    }
+    };
+  
+    fetchData();
   }, []);
+  
 
   const fetchOrders = async () => {
     try {
-      const fetchedOrdersResponse = await GetKitchenOrders(userData, auth);
-      if (fetchedOrdersResponse.code === 200) {
-        setFetchedOrders(fetchedOrdersResponse.body.Orders);
-        const orders = fetchedOrdersResponse.body.Orders;
-
-        const filteredOrdersForToday = orders.filter((order) => {
-          const orderDate = moment(order.CreatedAt);
-          return today === orderDate.date();
-        });
-
-        filteredOrdersForToday.forEach((order, index) => {
-          order.OrderNumber = index + 1;
-        });
-
-        setOrderNumber(orderNumber + orders.length);
+      if(auth){
+        const fetchedOrdersResponse = await GetKitchenOrders(userData, auth);
+        // console.log(fetchedOrdersResponse)
+        if (fetchedOrdersResponse && fetchedOrdersResponse.code === 200) {
+          setFetchedOrders(fetchedOrdersResponse.body.Orders);
+          const orders = fetchedOrdersResponse.body.Orders;
+  
+          const sortedMenus = orders.sort((a, b) => {
+            return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
+          });
+  
+          const filteredOrdersForToday = sortedMenus.filter((order) => {
+            const orderDate = moment(order.CreatedAt);
+            return today === orderDate.date();
+          });
+  
+          filteredOrdersForToday.forEach((order, index) => {
+            order.OrderNumber = index + 1;
+          });
+  
+          setOrderNumber(orderNumber + orders.length);
+        }
       }
     } catch (error) {
       message.error('Failed to fetch orders, check your internet connection');
@@ -121,7 +143,7 @@ const Orders = () => {
     // fetchOrders();
     const intervalId = setInterval(fetchOrders, 2000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [auth]);
 
   const handleDoneAndPackagedButtonClick = async () => {
     if (currentOrder.IsAttended) {
@@ -129,10 +151,18 @@ const Orders = () => {
       return;
     }
   
+    // const updatedOrders = fetchedOrders.map((order) =>
+    //   order.TrxRef === currentOrder.TrxRef
+    //     ? { ...order, IsAttended: true }
+    //     : order
+    // );
+
     setDoneAndPackagedOrders((prevDoneAndPackagedOrders) => [
       ...prevDoneAndPackagedOrders,
       currentOrder.TrxRef,
     ]);
+
+    // setFetchedOrders(updatedOrders);
   
     let notificationData;
   
@@ -174,30 +204,65 @@ const Orders = () => {
     setCurrentOrderIndex(Math.max(0, currentOrderIndex - ordersPerPage));
   };
 
-  //Firebase Notification i hope it works
+  const playAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(error => {
+        
+      });
+    }
+  };
+
+  const animateAudio = () => {
+    playAudio();
+    animationRef.current = requestAnimationFrame(animateAudio);
+  };
+
   useEffect(() => {
-    onMessage(messaging, async(payload) => {
-      console.log('Message received. ', payload);
-      try {
-        const newOrders = await GetKitchenOrders(userData, auth);
-        console.log("New orders: ", newOrders);
-        if(newOrders.code === 200){
-          const newOrdersData = newOrders.body.Orders;
-          if(newOrdersData && newOrdersData.length > 0){
-            console.log("New orders received: ", newOrders);
-            const notifications = new Notification("New Order", {
-              body: `You have ${newOrders.length} new order(s)!`,
-            });
-            notification.open(notifications)
-            const audio = new Audio("/message_tone.mp3");
-            audio.play();
+    const storedLatestOrderTimestamp = localStorage.getItem('latestOrderTimestamp');
+    const latestOrderTimestamp = storedLatestOrderTimestamp
+      ? parseInt(storedLatestOrderTimestamp)
+      : 0;
+
+    // Sort the orders by creation time in descending order
+    const sortedOrders = [...filteredOrders].sort((a, b) => moment(b.CreatedAt).unix() - moment(a.CreatedAt).unix());
+
+    const currentOrder = sortedOrders[currentOrderIndex];
+
+    const isNewOrder =
+      currentOrder &&
+      moment(currentOrder.CreatedAt).unix() > latestOrderTimestamp;
+
+    if (isNewOrder) {
+      // Trigger Notification
+      notification.info({
+        message: 'New Order!',
+        description: `Order #${currentOrder.TrxRef} has been received.`,
+        duration: 0,
+        onClose: () => {
+          // Stop audio and animation when the notification is closed
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
           }
-        }
-      } catch (error) {
-        console.error('Error fetching new orders:', error);
-      }
-    })
-  }, [userData, auth])
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+          }
+        },
+      });
+
+      const audio = new Audio('/message_tone.mp3');
+      audio.loop = true; // Set the loop property to true
+
+      // Assign the audio element to the ref
+      audioRef.current = audio;
+
+      // Start continuous audio playback
+      animateAudio();
+
+      // Update LocalStorage with the latest timestamp
+      localStorage.setItem('latestOrderTimestamp', moment(currentOrder.CreatedAt).unix().toString());
+    }
+  }, [filteredOrders, currentOrderIndex]);
 
   return (
     <div style={{ marginLeft: '7rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -228,12 +293,12 @@ const Orders = () => {
             .filter((order) => order.TrxRef.toString().includes(searchQuery) &&
               (attendedFilter === null || order.IsAttended === (attendedFilter === 'attended'))
             )
-            .map((order) => (
+            .map((order, index) => (
               <Panel
                 key={order.TrxRef}
                 header={<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  Order {order.TrxRef} <br />
-                  Order #{order.OrderNumber}
+                  OrderID {order.TrxRef} <br />
+                  Order #{filteredOrders.length - index}
                   <ChatCircleDots
                     size={26}
                     color='green'

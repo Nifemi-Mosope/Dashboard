@@ -1,4 +1,5 @@
 import {axios, axiosWithAuth} from '../Features/Utilis'
+import instance from '../Features/Utilis'
 
 const BASE_PATH = "/Kitchen"
 export async function SignUp(data){
@@ -121,7 +122,7 @@ export async function ResetPasswords(data) {
 export async function DeleteStaff(data, auth) {
     try {
         const path = `${BASE_PATH}/DeleteStaff?Email=${data}`;
-        const response = await axiosWithAuth(auth.accesstoken).delete(path);
+        const response = await instance.delete(path);
         return response;
     } catch (error) {
         throw error;
@@ -143,7 +144,7 @@ export async function CreateMenu(data, auth, userData){
         }
 
         const path = BASE_PATH + "/CreateMenu"
-        const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
+        const response = await instance.post(path, payload)
         return response.data
     } catch (error) {
         return error?.response?.data
@@ -158,7 +159,7 @@ export async function GetKitchenMenus(userData, auth) {
         const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
         const path = BASE_PATH + `/GetKitchenMenus?KitchenId=${kitchenId}`;
   
-        const response = await axiosWithAuth(auth.accesstoken).get(path);
+        const response = await instance.get(path);
         return response.data;
       } else {
         console.error("Invalid userData object passed to GetMenus function");
@@ -172,7 +173,7 @@ export async function GetKitchenMenus(userData, auth) {
 export async function DeleteKitchen(data, auth) {
     try {
       const path = BASE_PATH + `/Delete?Email=${data.Email}`;
-      const response = await axiosWithAuth(auth.accesstoken).delete(path);
+      const response = await instance.delete(path);
       return response.data;
     } catch (error) {
         return error?.response?.data
@@ -186,7 +187,7 @@ export async function GetReviews(userData, auth) {
   
         const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
         const path = BASE_PATH + `/GetReviewsByKitchenId?KitchenId=${kitchenId}`;
-        const response = await axiosWithAuth(auth.accesstoken).get(path);
+        const response = await instance.get(path);
         if(response){
             return response.data;
         }
@@ -208,7 +209,7 @@ export async function UpdateMenu(menuId, data, auth) {
       };
   
       const path = BASE_PATH + `/UpdateMenu?MenuId=${menuId}`;
-      const response = await axiosWithAuth(auth.accesstoken).put(path, payload);
+      const response = await instance.put(path, payload);
       return response.data;
     } catch (error) {
       return error?.response?.data;
@@ -218,7 +219,7 @@ export async function UpdateMenu(menuId, data, auth) {
 export async function DeleteMenu( auth, menus){
     try {
         const path = BASE_PATH + `/DeleteMenu?MenuId=${menus.Id}`
-        const response = await axiosWithAuth(auth.accesstoken).delete(path)
+        const response = await instance.delete(path)
         return response.data
     } catch (error) {
         return error?.response?.data;
@@ -238,7 +239,7 @@ export async function AddStaff(data, auth) {
             Role: data.Role
         }
         const path = BASE_PATH + "/AddStaff"
-        const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
+        const response = await instance.post(path, payload)
         return response.data
     }
      catch (error) {
@@ -249,7 +250,7 @@ export async function AddStaff(data, auth) {
 export async function GetKitchenOrders(data, auth) {
     try {
         const path = BASE_PATH + `/GetKitchenOrders?Email=${data.KitchenEmail}`
-        const response = await axiosWithAuth(auth.accesstoken).get(path)
+        const response = await instance.get(path)
         return response.data
     } catch (error) {
         return error?.response?.data;
@@ -279,7 +280,7 @@ export async function SendNotification(data, auth) {
             OrderId: data.OrderId,
         }
         const path = BASE_PATH + "/SendNotification"
-        const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
+        const response = await instance.post(path, payload)
         return response.data
     } catch (error) {
         return error?.response?.data;
@@ -298,7 +299,7 @@ export async function NotifyEveryone(data, auth, userData) {
             Message: data.Message,
         }
         const path = BASE_PATH + "/NotifiyAllUsers"
-        const response = await axiosWithAuth(auth.accesstoken).post(path, payload)
+        const response = await instance.post(path, payload)
         return response.data
     } catch (error) {
         return error?.response?.data;
@@ -308,7 +309,7 @@ export async function NotifyEveryone(data, auth, userData) {
 export async function GetStaff(data, auth) {
     try {
         const path = BASE_PATH + `/GetKitchenStaff?Email=${data.KitchenEmail}`
-        const response = await axiosWithAuth(auth.accesstoken).get(path)
+        const response = await instance.get(path)
         return response.data
     } catch (error) {
         return error?.response?.data;

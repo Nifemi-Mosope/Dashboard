@@ -24,7 +24,7 @@ function Header() {
 
   const getKitchenImageUrl = () => {
     if (userData && userData.KitchenImage) {
-      return `http://192.168.241.144:85/Uploads/${userData.KitchenImage}`;
+      return `http://192.168.220.144:85/Uploads/${userData.KitchenImage}`;
     }
     return quickeeImage;
   };

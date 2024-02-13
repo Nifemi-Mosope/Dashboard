@@ -7,17 +7,30 @@ import PageContent from '../../components/DashboardComponents/PageContent';
 import '../../components/DashboardComponents/dash.css'
 import { useMenuContext } from '../SideBarLinkPage/Menus/MenuContext';
 import { useNavigate } from 'react-router-dom';
+import { Signin } from '../Features/KitchenSlice';
 
 function Home() {
     const [selectedMenuItem, setSelectedMenuItem] = useState('/orders');
-    const { auth } = useMenuContext();
+    const { auth, userData } = useMenuContext();
     const navigate = useNavigate();
     
     useEffect(() => {
-        if(auth?.accesstoken === undefined){
+      let isMounted = true;
+
+      const fetchData = async () => {
+          if(auth?.accesstoken === undefined){
+              navigate('/signIn')
+          } else if (auth?.accesstoken === null){
             navigate('/signIn')
-        }
-    },[auth])
+          }
+      };
+
+      fetchData();
+
+      return () => {
+          isMounted = false;
+      };
+    },[auth, navigate, userData]);
 
     return (
         <div className='Home'>
