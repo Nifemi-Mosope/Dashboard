@@ -1,25 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import './dash.css';
-import quickeeImage from './Quickee.jpeg';
-import { Badge, Image, Rate, Space, Typography, Modal, Button, Input } from 'antd';
-import { MailOutlined, BellFilled } from '@ant-design/icons';
-import { useMenuContext } from '../../MainCode/SideBarLinkPage/Menus/MenuContext';
-import { GetReviews, NotifyEveryone } from '../../MainCode/Features/KitchenSlice';
-import { message } from 'antd';
+import React, { useState, useEffect } from "react";
+import "./dash.css";
+import quickeeImage from "./Quickee.jpeg";
+import {
+  Badge,
+  Image,
+  Rate,
+  Space,
+  Typography,
+  Modal,
+  Button,
+  Input,
+} from "antd";
+import { MailOutlined, BellFilled } from "@ant-design/icons";
+import { useMenuContext } from "../../MainCode/SideBarLinkPage/Menus/MenuContext";
+import {
+  GetReviews,
+  NotifyEveryone,
+} from "../../Features/Kitchen/KitchenSlice";
+import { message } from "antd";
 
 function Header() {
   const { userData, auth } = useMenuContext();
   const [totalReviews, setTotalReviews] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [notificationTitle, setNotificationTitle] = useState('');
-  const [notificationMessage, setNotificationMessage] = useState('');
-  const storedKitchenImageUrl = localStorage.getItem('kitchenImageUrl');
+  const [notificationTitle, setNotificationTitle] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const storedKitchenImageUrl = localStorage.getItem("kitchenImageUrl");
   const [totalAgreeCount, setTotalAgreeCount] = useState(0);
   const [totalDisagreeCount, setTotalDisagreeCount] = useState(0);
 
   const imageStyle = {
-    width: '50px',
-    borderRadius: '50%',
+    width: "50px",
+    borderRadius: "50%",
   };
 
   const getKitchenImageUrl = () => {
@@ -32,7 +44,7 @@ function Header() {
   const kitchenImageUrl = getKitchenImageUrl();
 
   if (kitchenImageUrl !== storedKitchenImageUrl) {
-    localStorage.setItem('kitchenImageUrl', kitchenImageUrl);
+    localStorage.setItem("kitchenImageUrl", kitchenImageUrl);
   }
 
   const handleBellIconClick = () => {
@@ -42,29 +54,29 @@ function Header() {
   const handleModalOk = async () => {
     const payload = {
       Title: notificationTitle,
-      UserId: 'abcd',
+      UserId: "abcd",
       Message: notificationMessage,
-    }
+    };
     try {
-      const response = await NotifyEveryone(payload, auth, userData)
-      if(response.code === 200){
-        message.success("Notification sent successfully")
+      const response = await NotifyEveryone(payload, auth, userData);
+      if (response.code === 200) {
+        message.success("Notification sent successfully");
         setIsModalVisible(false);
       } else {
-        message.error("Error sending notification")
+        message.error("Error sending notification");
       }
     } catch (error) {
       console.log(error?.response?.data);
-      message.error("Internal Server Error")
+      message.error("Internal Server Error");
     }
     // setIsModalVisible(false);
   };
-  
+
   // Handle modal Cancel button click
   const handleModalCancel = () => {
     setIsModalVisible(false);
   };
-  
+
   const calculateKitchenRating = () => {
     const totalCount = totalAgreeCount + totalDisagreeCount;
 
@@ -84,12 +96,20 @@ function Header() {
         const response = await GetReviews(userData, auth);
         if (response && response.code === 200) {
           const reviewsResponse = response.body;
-          const totalReviewsReceived = reviewsResponse ? reviewsResponse.length : 0;
+          const totalReviewsReceived = reviewsResponse
+            ? reviewsResponse.length
+            : 0;
           setTotalReviews(totalReviewsReceived);
-          
+
           if (reviewsResponse && Array.isArray(reviewsResponse)) {
-            const totalAgree = reviewsResponse.reduce((total, review) => total + parseInt(review.AgreeCount), 0);
-            const totalDisagree = reviewsResponse.reduce((total, review) => total + parseInt(review.DisagreeCount), 0);
+            const totalAgree = reviewsResponse.reduce(
+              (total, review) => total + parseInt(review.AgreeCount),
+              0
+            );
+            const totalDisagree = reviewsResponse.reduce(
+              (total, review) => total + parseInt(review.DisagreeCount),
+              0
+            );
             setTotalAgreeCount(totalAgree);
             setTotalDisagreeCount(totalDisagree);
           }
@@ -98,29 +118,37 @@ function Header() {
         console.error("Error fetching kitchen reviews:", error);
       }
     };
-  
+
     fetchReviews();
-  }, [userData?.Id, auth]);  
+  }, [userData?.Id, auth]);
 
   const kitchenRating = calculateKitchenRating();
-  const isBasicStaff = userData && userData.Role === 'basic';
+  const isBasicStaff = userData && userData.Role === "basic";
 
   return (
-    <div className='Header'>
+    <div className="Header">
       <Image src={kitchenImageUrl} style={imageStyle} />
-      <Typography.Title style={{ fontFamily: 'sans-serif', marginLeft: '5%' }}>
-        {isBasicStaff ? `${userData.FirstName} ${userData.LastName} (staff)` : userData ? userData.KitchenName : 'Loading...'}
+      <Typography.Title style={{ fontFamily: "sans-serif", marginLeft: "5%" }}>
+        {isBasicStaff
+          ? `${userData.FirstName} ${userData.LastName} (staff)`
+          : userData
+          ? userData.KitchenName
+          : "Loading..."}
       </Typography.Title>
 
-      <div style={{ marginRight: '3%' }}>
+      <div style={{ marginRight: "3%" }}>
         <Space size={26}>
           <Rate value={kitchenRating} disabled allowHalf />
-          <span style={{ marginLeft: '5px', fontSize: '16px', fontWeight: 'bold' }}>{kitchenRating.toFixed(1)}</span>
-          <Badge count={totalReviews} style={{ cursor: 'pointer' }}>
-            <MailOutlined style={{ fontSize: '20px' }} />
+          <span
+            style={{ marginLeft: "5px", fontSize: "16px", fontWeight: "bold" }}
+          >
+            {kitchenRating.toFixed(1)}
+          </span>
+          <Badge count={totalReviews} style={{ cursor: "pointer" }}>
+            <MailOutlined style={{ fontSize: "20px" }} />
           </Badge>
-          <Badge style={{ cursor: 'pointer' }} onClick={handleBellIconClick}>
-            <BellFilled style={{ fontSize: '20px' }} />
+          <Badge style={{ cursor: "pointer" }} onClick={handleBellIconClick}>
+            <BellFilled style={{ fontSize: "20px" }} />
           </Badge>
         </Space>
       </div>
@@ -136,9 +164,9 @@ function Header() {
           </Button>,
         ]}
       >
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: "center" }}>
           <h2>Send Notification</h2>
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: "16px" }}>
             <label htmlFor="notificationTitle">Title:</label>
             <Input
               id="notificationTitle"
@@ -146,7 +174,7 @@ function Header() {
               onChange={(e) => setNotificationTitle(e.target.value)}
             />
           </div>
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: "16px" }}>
             <label htmlFor="notificationMessage">Message:</label>
             <Input.TextArea
               id="notificationMessage"

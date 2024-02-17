@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Space, Statistic, Table, Typography } from "antd";
-import { GetKitchenOrders } from "../../MainCode/Features/KitchenSlice";
+import { GetKitchenOrders } from "../../Features/Kitchen/KitchenSlice";
 import { useMenuContext } from "../../MainCode/SideBarLinkPage/Menus/MenuContext";
 function RecentOrders() {
   const [dataSource, setDataSource] = useState([]);
@@ -17,7 +17,6 @@ function RecentOrders() {
         if (response && response.code === 200) {
           const orders = response.body.Orders;
           if (orders && Array.isArray(orders)) {
-
             const currentDate = new Date();
             const currentDay = currentDate.getDate();
             const currentMonth = currentDate.getMonth();
@@ -34,7 +33,9 @@ function RecentOrders() {
               );
             });
 
-            recentOrders.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
+            recentOrders.sort(
+              (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt)
+            );
             const firstFiveRecentOrders = recentOrders.slice(0, 5);
             setDataSource(firstFiveRecentOrders);
           } else {
@@ -70,21 +71,20 @@ function RecentOrders() {
       key: "Items",
       render: (foodDetails) => (
         <ul>
-          {foodDetails && foodDetails.map((foodItem, index) => (
-            <li key={index}>
-              {foodItem.Name} x{foodItem.Scoops} (₦{foodItem.Price})
-            </li>
-          ))}
+          {foodDetails &&
+            foodDetails.map((foodItem, index) => (
+              <li key={index}>
+                {foodItem.Name} x{foodItem.Scoops} (₦{foodItem.Price})
+              </li>
+            ))}
         </ul>
       ),
     },
     {
-      title: 'Total Price',
-      dataIndex: 'TotalAmount',
-      key: 'TotalAmount',
-      render: (text, record) => (
-        `₦${text}`
-      )
+      title: "Total Price",
+      dataIndex: "TotalAmount",
+      key: "TotalAmount",
+      render: (text, record) => `₦${text}`,
     },
   ];
 

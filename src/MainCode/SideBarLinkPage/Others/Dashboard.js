@@ -1,9 +1,18 @@
 import { Card, Space, Statistic, Typography } from "antd";
-import { Chat, CurrencyNgn, Hamburger, ShoppingCart, User } from "phosphor-react";
+import {
+  Chat,
+  CurrencyNgn,
+  Hamburger,
+  ShoppingCart,
+  User,
+} from "phosphor-react";
 import RecentOrders from "../../../components/DashboardComponents/RecentOrders";
 import DashboardChart from "../../../components/DashboardComponents/DashboardChart";
 import { useEffect, useState } from "react";
-import { GetKitchenOrders, GetReviews } from "../../Features/KitchenSlice";
+import {
+  GetKitchenOrders,
+  GetReviews,
+} from "../../../Features/Kitchen/KitchenSlice";
 import { useMenuContext } from "../Menus/MenuContext";
 
 function Dashboard() {
@@ -21,7 +30,7 @@ function Dashboard() {
   const { userData, auth } = useMenuContext();
 
   const getPreviousDayTotalOrders = () => {
-    const storedOrders = localStorage.getItem('totalOrders');
+    const storedOrders = localStorage.getItem("totalOrders");
     if (storedOrders) {
       return parseInt(storedOrders, 10);
     }
@@ -29,7 +38,7 @@ function Dashboard() {
   };
 
   const getPreviousDayTotalCustomers = () => {
-    const storedCustomers = localStorage.getItem('totalCustomers');
+    const storedCustomers = localStorage.getItem("totalCustomers");
     if (storedCustomers) {
       return parseInt(storedCustomers, 10);
     }
@@ -37,7 +46,7 @@ function Dashboard() {
   };
 
   const getPreviousDayTotalReviews = () => {
-    const storedReviews = localStorage.getItem('totalReviews');
+    const storedReviews = localStorage.getItem("totalReviews");
     if (storedReviews) {
       return parseInt(storedReviews, 10);
     }
@@ -45,7 +54,7 @@ function Dashboard() {
   };
 
   const getPreviousDayTotalRevenue = () => {
-    const storedRevenue = localStorage.getItem('totalRevenue');
+    const storedRevenue = localStorage.getItem("totalRevenue");
     if (storedRevenue) {
       return parseFloat(storedRevenue);
     }
@@ -62,7 +71,7 @@ function Dashboard() {
       return isNaN(orderTotal) ? total : total + orderTotal;
     }, 0);
   }
-  
+
   useEffect(() => {
     const fetchKitchenOrders = async () => {
       try {
@@ -80,11 +89,12 @@ function Dashboard() {
               orderDate.getFullYear() === currentDateTodays.getFullYear()
             );
           });
-  
-          const paidOrders = currentDayOrders.filter((order) => order.IsPaid === true);
+
+          const paidOrders = currentDayOrders.filter(
+            (order) => order.IsPaid === true
+          );
           setTotalOrders(paidOrders.length);
 
-          
           const currentMonthOrders = orders.filter((order) => {
             const orderDate = new Date(order.CreatedAt);
             return (
@@ -93,7 +103,9 @@ function Dashboard() {
             );
           });
 
-          const monthlyOrders = currentMonthOrders.filter((order) => order.IsPaid === true);
+          const monthlyOrders = currentMonthOrders.filter(
+            (order) => order.IsPaid === true
+          );
           if (monthlyOrders.length > 0) {
             const totalRevenueForMonth = calculateTotalRevenue(monthlyOrders);
             setTotalRevenue(totalRevenueForMonth);
@@ -108,7 +120,8 @@ function Dashboard() {
           const previousDayTotal = getPreviousDayTotalOrders();
 
           const currentDate = new Date();
-          const totalCustomersForCurrentDate = calculateTotalCustomersForCurrentDate(orders, currentDate, true);
+          const totalCustomersForCurrentDate =
+            calculateTotalCustomersForCurrentDate(orders, currentDate, true);
           setTotalCustomers(totalCustomersForCurrentDate);
 
           const reviewsResponse = await GetReviews(userData, auth);
@@ -122,7 +135,10 @@ function Dashboard() {
             const previousDayTotalReviews = getPreviousDayTotalReviews();
             setPreviousDayTotalReviews(previousDayTotalReviews);
 
-            localStorage.setItem('totalReviews', totalReviewsReceived.toString());
+            localStorage.setItem(
+              "totalReviews",
+              totalReviewsReceived.toString()
+            );
           } else {
             console.error("Failed to fetch kitchen reviews");
           }
@@ -131,7 +147,7 @@ function Dashboard() {
           setTotalRevenue(totalRevenueReceived);
           const previousDayTotalRevenue = getPreviousDayTotalRevenue();
           setPreviousDayTotalRevenue(previousDayTotalRevenue);
-          localStorage.setItem('totalRevenue', totalRevenueReceived.toString());
+          localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
 
           const mostOrderedFoodMap = orders.reduce((foodCountMap, order) => {
             const orderDate = new Date(order.CreatedAt);
@@ -152,19 +168,22 @@ function Dashboard() {
             }
             return foodCountMap;
           }, {});
-          
+
           const mostOrdered =
             Object.keys(mostOrderedFoodMap).length > 0
               ? Object.keys(mostOrderedFoodMap).reduce((mostOrdered, food) => {
-                if (!mostOrdered || mostOrderedFoodMap[food] > mostOrderedFoodMap[mostOrdered]) {
-                return food;
-              }
-                return mostOrdered;
-          }, null)
-          : "NILL";
-          
+                  if (
+                    !mostOrdered ||
+                    mostOrderedFoodMap[food] > mostOrderedFoodMap[mostOrdered]
+                  ) {
+                    return food;
+                  }
+                  return mostOrdered;
+                }, null)
+              : "NILL";
+
           setMostOrderedFood(mostOrdered);
-          
+
           setPreviousDayTotalOrders(previousDayTotal);
 
           const previousDayTotalCustomers = getPreviousDayTotalCustomers();
@@ -173,8 +192,11 @@ function Dashboard() {
           setPreviousDayTotalRevenue(previousDayTotalRevenue);
 
           // localStorage.setItem('totalOrders', totalOrdersReceived.toString());
-          localStorage.setItem('totalCustomers', totalCustomersForCurrentDate.toString());
-          localStorage.setItem('totalRevenue', totalRevenueReceived.toString());
+          localStorage.setItem(
+            "totalCustomers",
+            totalCustomersForCurrentDate.toString()
+          );
+          localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
         } else {
           console.error("Failed to fetch kitchen orders");
         }
@@ -196,13 +218,17 @@ function Dashboard() {
     }).length;
   }
 
-  function calculateTotalCustomersForCurrentDate(orders, currentDate, considerPaidOrders) {
+  function calculateTotalCustomersForCurrentDate(
+    orders,
+    currentDate,
+    considerPaidOrders
+  ) {
     const customerSet = new Set();
-  
+
     orders.forEach((order) => {
       const { CreatedAt, UserId, IsPaid } = order;
       const createdAtDate = new Date(CreatedAt);
-  
+
       if (
         createdAtDate.getDate() === currentDate.getDate() &&
         createdAtDate.getMonth() === currentDate.getMonth() &&
@@ -212,25 +238,25 @@ function Dashboard() {
         customerSet.add(UserId);
       }
     });
-  
+
     return customerSet.size;
-  }  
+  }
 
   function calculateTotalRevenue(orders) {
     if (orders.length === 0) {
       return 0;
     }
-  
+
     // Filter orders where IsPaid is true
     const paidOrders = orders.filter((order) => order.IsPaid === true);
-  
+
     return paidOrders.reduce((total, order) => {
       const orderTotal = parseFloat(order.TotalAmount || 0);
       return isNaN(orderTotal) ? total : total + orderTotal;
     }, 0);
   }
 
-  const isBasicStaff = userData && userData.Role === 'basic';
+  const isBasicStaff = userData && userData.Role === "basic";
   if (isBasicStaff) {
     return (
       <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
@@ -240,13 +266,20 @@ function Dashboard() {
       </div>
     );
   }
-  
+
   return (
     <div style={{ overflowX: "hidden" }}>
       <Space size={10} direction="vertical">
         <Typography.Title level={3}>Dashboard</Typography.Title>
         <Space size={15} direction="horizontal">
-          <Card key="orders" style={{ backgroundColor: "#f2f2f2", borderColor: "black", flex: 1 }}>
+          <Card
+            key="orders"
+            style={{
+              backgroundColor: "#f2f2f2",
+              borderColor: "black",
+              flex: 1,
+            }}
+          >
             <Space direction="horizontal" size={15}>
               <ShoppingCart weight="fill" color="green" size={30} />
               <Statistic title="Orders" value={totalOrders} />
@@ -279,7 +312,7 @@ function Dashboard() {
             value={totalRevenue}
             previousValue={previousDayTotalRevenue}
           />
-          </Space>
+        </Space>
         <div style={{ display: "flex", flexDirection: "row" }}>
           <RecentOrders />
           <div style={{ marginLeft: "20px" }}>
@@ -293,12 +326,14 @@ function Dashboard() {
 
 function DashboardCard({ title, value, icon, previousValue }) {
   const increase = value > previousValue;
-  const showPercentageChange = title !== "Most Ordered Food" && title !== "Reviews";
-  
+  const showPercentageChange =
+    title !== "Most Ordered Food" && title !== "Reviews";
+
   const isNotFirstDay = previousValue !== 0;
-  const percentageChange = showPercentageChange && isNotFirstDay
-    ? ((value - previousValue) / previousValue) * 100
-    : 0;
+  const percentageChange =
+    showPercentageChange && isNotFirstDay
+      ? ((value - previousValue) / previousValue) * 100
+      : 0;
 
   return (
     <Card style={{ backgroundColor: "#f2f2f2", borderColor: "black" }}>
@@ -307,7 +342,9 @@ function DashboardCard({ title, value, icon, previousValue }) {
         <Statistic title={title} value={value} />
         {showPercentageChange && (
           <span style={{ color: increase ? "green" : "red" }}>
-            {increase ? `+${percentageChange.toFixed(2)}%` : `${percentageChange.toFixed(2)}%`}
+            {increase
+              ? `+${percentageChange.toFixed(2)}%`
+              : `${percentageChange.toFixed(2)}%`}
           </span>
         )}
       </Space>

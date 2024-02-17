@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import '../../SignUpScreen/signup.css';
-import { useNavigate } from 'react-router-dom';
-import { ResendVerifyEmail } from '../../Features/KitchenSlice';
-import { notification } from 'antd';
+import React, { useState } from "react";
+import "../../SignUpScreen/signup.css";
+import { useNavigate } from "react-router-dom";
+import { ResendVerifyEmail } from "../../../Features/Kitchen/KitchenSlice";
+import { notification } from "antd";
 
 function ResendCode() {
   const [formData, setFormData] = useState({
-    Email: '',
+    Email: "",
   });
 
   const handleInputChange = (e) => {
@@ -23,44 +23,55 @@ function ResendCode() {
     try {
       const payload = {
         Email: formData.Email,
-      }
+      };
 
       const response = await ResendVerifyEmail(payload);
-      console.log(response)
+      console.log(response);
       if (response.code === 200) {
         notification.success({
-          message: 'Email Resent',
-          description: 'Email verification link has been resent. Check your email.',
+          message: "Email Resent",
+          description:
+            "Email verification link has been resent. Check your email.",
         });
-        navigate('/verifyEmail');
+        navigate("/verifyEmail");
       } else {
         notification.error({
-          message: 'Resend Email Failed',
-          description: 'An error occurred while resending the email.',
+          message: "Resend Email Failed",
+          description: "An error occurred while resending the email.",
         });
       }
     } catch (error) {
       console.log(error);
       notification.error({
-        message: 'Internal Server Error',
-        description: 'An error occurred while processing your request.',
+        message: "Internal Server Error",
+        description: "An error occurred while processing your request.",
       });
     }
-  }
+  };
 
   return (
     <div className="glass-morphism">
-      <div className='fixed-header'>
-        <h1 className='title' onClick={() => window.location.reload()}>QuicKee</h1>
+      <div className="fixed-header">
+        <h1 className="title" onClick={() => window.location.reload()}>
+          QuicKee
+        </h1>
       </div>
       <div className="rectangle">
         <div>
-          <h2 style={{ textAlign: 'center', marginTop: '0%', fontFamily: 'sans-serif' }}>
+          <h2
+            style={{
+              textAlign: "center",
+              marginTop: "0%",
+              fontFamily: "sans-serif",
+            }}
+          >
             Resend Verify Email
           </h2>
           <form onSubmit={handleResendEmail}>
             <div className="input-group">
-              <label htmlFor="Email" style={{ fontFamily: 'sans-serif' }}>Email</label>
+              <label htmlFor="Email" style={{ fontFamily: "sans-serif" }}>
+                Email
+              </label>
               <input
                 type="email"
                 id="Email"

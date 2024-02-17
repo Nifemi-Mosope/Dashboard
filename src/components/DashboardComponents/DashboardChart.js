@@ -1,10 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Card } from 'antd';
-import { Line } from 'react-chartjs-2';
-import { GetKitchenOrders } from '../../MainCode/Features/KitchenSlice';
-import { useMenuContext } from '../../MainCode/SideBarLinkPage/Menus/MenuContext';
+import React, { useEffect, useState } from "react";
+import { Card } from "antd";
+import { Line } from "react-chartjs-2";
+import { GetKitchenOrders } from "../../Features/Kitchen/KitchenSlice";
+import { useMenuContext } from "../../MainCode/SideBarLinkPage/Menus/MenuContext";
 
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -24,7 +33,9 @@ function DashboardChart({ loading }) {
 
   const getMonthYear = () => {
     const currentDate = new Date();
-    const monthYearKey = `${currentDate.toLocaleString('default', { month: 'long' })} ${currentDate.getFullYear()}`;
+    const monthYearKey = `${currentDate.toLocaleString("default", {
+      month: "long",
+    })} ${currentDate.getFullYear()}`;
     return monthYearKey;
   };
 
@@ -35,13 +46,11 @@ function DashboardChart({ loading }) {
 
         if (response && response.code === 200) {
           const orders = response.body.Orders;
-          
-          const paidOrders = orders.filter(order => order.IsPaid);
-          
+
+          const paidOrders = orders.filter((order) => order.IsPaid);
 
           const dailyRevenueData = calculateDailyRevenue(paidOrders);
           setDailyRevenues(dailyRevenueData);
-
 
           const totalRevenueForMonth = dailyRevenueData.reduce(
             (total, daily) => total + daily,
@@ -50,15 +59,20 @@ function DashboardChart({ loading }) {
           setMonthlyRevenue(totalRevenueForMonth);
 
           const currentDate = new Date();
-          const monthYearKey = `${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
+          const monthYearKey = `${
+            currentDate.getMonth() + 1
+          }-${currentDate.getFullYear()}`;
           const updatedHistoricalData = [...historicalData];
-          updatedHistoricalData.push({ monthYear: monthYearKey, revenue: totalRevenueForMonth });
+          updatedHistoricalData.push({
+            monthYear: monthYearKey,
+            revenue: totalRevenueForMonth,
+          });
           setHistoricalData(updatedHistoricalData);
         } else {
-          console.error('Failed to fetch kitchen orders');
+          console.error("Failed to fetch kitchen orders");
         }
       } catch (error) {
-        console.error('Error fetching kitchen orders', error);
+        console.error("Error fetching kitchen orders", error);
       }
     };
 
@@ -82,11 +96,11 @@ function DashboardChart({ loading }) {
     labels: Array.from({ length: 31 }, (_, i) => (i + 1).toString()),
     datasets: [
       {
-        label: 'Daily Revenue',
+        label: "Daily Revenue",
         data: dailyRevenues,
-        borderColor: 'rgb(0, 0, 0)',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        yAxisID: 'y',
+        borderColor: "rgb(0, 0, 0)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        yAxisID: "y",
       },
     ],
   };
@@ -94,7 +108,7 @@ function DashboardChart({ loading }) {
   const options = {
     responsive: true,
     interaction: {
-      mode: 'index',
+      mode: "index",
       intersect: false,
     },
     plugins: {
@@ -109,7 +123,7 @@ function DashboardChart({ loading }) {
     },
     scales: {
       x: {
-        type: 'category',
+        type: "category",
         grid: {
           display: false,
         },
@@ -118,7 +132,7 @@ function DashboardChart({ loading }) {
         },
       },
       y: {
-        type: 'linear',
+        type: "linear",
         ticks: {
           font: { size: 14 },
           // stepSize: 'auto',
@@ -126,21 +140,20 @@ function DashboardChart({ loading }) {
       },
     },
   };
-   
 
   const chartContainerStyle = {
-    width: '100%',
-    height: '17rem',
-    marginRight: '150%',
-    backgroundColor: 'white',
+    width: "100%",
+    height: "17rem",
+    marginRight: "150%",
+    backgroundColor: "white",
   };
 
   const cardStyle = {
-    border: '1px solid #e8e8e8',
-    borderRadius: '5px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    width: '34rem',
-    bottom: '0%',
+    border: "1px solid #e8e8e8",
+    borderRadius: "5px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    width: "34rem",
+    bottom: "0%",
   };
 
   return (
@@ -152,10 +165,7 @@ function DashboardChart({ loading }) {
           <div>
             <Line options={options} data={revenueData} />
             {monthlyRevenue !== null && !historicalData.length ? (
-              <p>
-                Total Monthly Revenue: ₦
-                {monthlyRevenue.toFixed(2)}
-              </p>
+              <p>Total Monthly Revenue: ₦{monthlyRevenue.toFixed(2)}</p>
             ) : null}
           </div>
         )}

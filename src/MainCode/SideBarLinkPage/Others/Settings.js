@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { Card, Form, Button, Upload, message, Modal, Input } from "antd";
-import { UploadOutlined, PlusOutlined, LockOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  PlusOutlined,
+  LockOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import { useMenuContext } from "../Menus/MenuContext";
-import { AddStaff, UploadImage, DeleteStaff, GetStaff } from "../../Features/KitchenSlice";
+import {
+  AddStaff,
+  UploadImage,
+  DeleteStaff,
+  GetStaff,
+} from "../../../Features/Kitchen/KitchenSlice";
 
 function Settings() {
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
   const [staffManagement, setStaffManagement] = useState([]);
   const [deleteStaffIndex, setDeleteStaffIndex] = useState(null);
-  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] =
+    useState(false);
   const [staffShowPasswords, setStaffShowPasswords] = useState([]);
   const { userData, auth, setStaffs, setImage, staffs } = useMenuContext();
   const [formData, setFormData] = useState({
-    FirstName: '',
+    FirstName: "",
     KitchenId: userData.Id,
-    LastName: '',
-    Email: '',
-    Password: '',
-    Phone: '',
+    LastName: "",
+    Email: "",
+    Password: "",
+    Phone: "",
     University: userData.University,
-    Role: '',
+    Role: "",
   });
   const [isFormFilled, setIsFormFilled] = useState(false);
   const [isAddingStaff, setIsAddingStaff] = useState(false);
@@ -32,12 +44,12 @@ function Settings() {
 
   const isFormValid = () => {
     return (
-      formData.FirstName !== '' &&
-      formData.LastName !== '' &&
-      formData.Email !== '' &&
-      formData.Phone !== '' &&
-      formData.University !== '' &&
-      formData.Password !== ''
+      formData.FirstName !== "" &&
+      formData.LastName !== "" &&
+      formData.Email !== "" &&
+      formData.Phone !== "" &&
+      formData.University !== "" &&
+      formData.Password !== ""
     );
   };
 
@@ -76,15 +88,15 @@ function Settings() {
       if (fileInput.files[0]) {
         formData.append("image", fileInput.files[0]);
         formData.append("KitchenId", userData.Id);
-  
+
         const response = await UploadImage(formData);
-  
+
         if (response.code === 200) {
-          localStorage.setItem('Image', JSON.stringify(response.extrainfo));
+          localStorage.setItem("Image", JSON.stringify(response.extrainfo));
           message.success("Image uploaded successfully");
           setUploadImageModalVisible(false);
           // console.log(response.extrainfo)
-          setImage(response.extrainfo)
+          setImage(response.extrainfo);
         }
       } else {
         message.error("Please select an image to upload.");
@@ -93,44 +105,46 @@ function Settings() {
       console.error(error);
       message.error("An error occurred during image upload.");
     }
-  }
+  };
 
   const handleAddStaff = async () => {
     setIsAddingStaff(true);
-  
+
     try {
       const staffData = {
         ...formData,
-        Role: 'basic',
+        Role: "basic",
         KitchenId: userData.Id,
       };
-  
+
       const response = await AddStaff(staffData, auth);
       // console.log('StaffLog: ' ,response)
       if (response.code === 200) {
-        localStorage.setItem('staffs', JSON.stringify(response.body));
+        localStorage.setItem("staffs", JSON.stringify(response.body));
         const { FirstName, LastName, Email, Password } = formData;
         const username = `${FirstName} ${LastName}`;
-  
+
         const staffMember = {
           username,
           email: Email,
           password: Password,
         };
-        setStaffs(response.body)
+        setStaffs(response.body);
         setStaffManagement([...staffManagement, staffMember]);
-        fetchStaffData()
+        fetchStaffData();
         message.success("New Staff Added Successfully");
-      } else if(response.message === "Staff already exist"){
+      } else if (response.message === "Staff already exist") {
         message.error("Staff already exist");
       }
     } catch (error) {
-      message.error("An error occurred while adding staff. Please try again later.");
+      message.error(
+        "An error occurred while adding staff. Please try again later."
+      );
     }
-  
+
     setIsAddingStaff(false);
     setAddStaffModalVisible(false);
-  };  
+  };
 
   const togglePasswordVisibility = (index) => {
     const updatedShowPasswords = [...staffShowPasswords];
@@ -142,11 +156,11 @@ function Settings() {
     try {
       const response = await DeleteStaff(staffs.Email, auth);
       console.log(response, "Deleted Staff");
-  
+
       if (response.data === `Staff with id ${staffs.Email} has been deleted!`) {
         await fetchStaffData();
         const updatedStaffManagement = [...staffManagement];
-      
+
         updatedStaffManagement.splice(deleteStaffIndex, 1);
         setStaffManagement(updatedStaffManagement);
 
@@ -158,7 +172,7 @@ function Settings() {
     }
   };
 
-  const isBasicStaff = userData && userData.Role === 'basic';
+  const isBasicStaff = userData && userData.Role === "basic";
   if (isBasicStaff) {
     return (
       <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
@@ -168,7 +182,7 @@ function Settings() {
       </div>
     );
   }
-  
+
   return (
     <div style={{ marginTop: "2rem", marginLeft: "7rem" }}>
       <Card title="Settings" style={{ width: "60rem" }}>
@@ -179,7 +193,9 @@ function Settings() {
           encType="multipart/form-data"
           id="uploadImage"
         >
-          <div style={{ justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div
+            style={{ justifyContent: "space-between", alignItems: "flex-end" }}
+          >
             <Form.Item label="Add New Staff">
               <Button
                 type="primary"
@@ -210,21 +226,21 @@ function Settings() {
                 </Button>,
               ]}
             >
-              <div style={{ justifyContent: 'flex-start'}}>
-                <div style={{justifyContent: 'flex-start'}}>
+              <div style={{ justifyContent: "flex-start" }}>
+                <div style={{ justifyContent: "flex-start" }}>
                   <label>Firstname</label>
                   <input
                     type="text"
                     id="FirstName"
                     name="FirstName"
-                    placeholder="Input staff email" 
+                    placeholder="Input staff email"
                     value={formData.FirstName}
                     onChange={handleInputChange}
-                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    style={{ width: "70%", height: "10px", borderRadius: 5 }}
                     required
                   />
                 </div>
-                <div style={{justifyContent: 'flex-start'}}>
+                <div style={{ justifyContent: "flex-start" }}>
                   <label>Lastname</label>
                   <input
                     type="text"
@@ -233,11 +249,11 @@ function Settings() {
                     placeholder="Input staff Lastname"
                     value={formData.LastName}
                     onChange={handleInputChange}
-                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    style={{ width: "70%", height: "10px", borderRadius: 5 }}
                     required
                   />
                 </div>
-                <div style={{justifyContent: 'flex-start'}}>
+                <div style={{ justifyContent: "flex-start" }}>
                   <label>Email</label>
                   <input
                     type="email"
@@ -246,33 +262,33 @@ function Settings() {
                     placeholder="Input staff email"
                     value={formData.Email}
                     onChange={handleInputChange}
-                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    style={{ width: "70%", height: "10px", borderRadius: 5 }}
                     required
                   />
                 </div>
-                <div style={{ justifyContent: 'flex-start'}}>
+                <div style={{ justifyContent: "flex-start" }}>
                   <label>Phone Number</label>
                   <input
                     type="number"
                     id="Phone"
                     name="Phone"
-                    placeholder="Input mobile number" 
+                    placeholder="Input mobile number"
                     value={formData.Phone}
                     onChange={handleInputChange}
-                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    style={{ width: "70%", height: "10px", borderRadius: 5 }}
                     required
                   />
                 </div>
-                <div style={{ justifyContent: 'flex-start'}}>
+                <div style={{ justifyContent: "flex-start" }}>
                   <label>Password</label>
                   <input
                     type="password"
                     id="Password"
                     name="Password"
-                    placeholder="Input staff password" 
+                    placeholder="Input staff password"
                     value={formData.Password}
                     onChange={handleInputChange}
-                    style={{width: '70%', height: '10px', borderRadius: 5}}
+                    style={{ width: "70%", height: "10px", borderRadius: 5 }}
                     required
                   />
                 </div>
@@ -280,13 +296,13 @@ function Settings() {
             </Modal>
 
             <Form.Item label="Upload/Update Kitchen Image">
-                <Button
-                  icon={<UploadOutlined />}
-                  style={{ width: "12rem", marginLeft: "30rem" }}
-                  onClick={() => setUploadImageModalVisible(true)}
-                >
-                  Upload Image
-                </Button>
+              <Button
+                icon={<UploadOutlined />}
+                style={{ width: "12rem", marginLeft: "30rem" }}
+                onClick={() => setUploadImageModalVisible(true)}
+              >
+                Upload Image
+              </Button>
             </Form.Item>
           </div>
         </Form>
@@ -300,8 +316,8 @@ function Settings() {
         }}
         onCancel={() => setUploadImageModalVisible(false)}
       >
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-          <input type="file" style={{display: 'flex', marginLeft: '35%'}}/>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <input type="file" style={{ display: "flex", marginLeft: "35%" }} />
           <Button
             type="primary"
             style={{ marginLeft: "1rem" }}
@@ -325,32 +341,29 @@ function Settings() {
       <div style={{ marginTop: "2rem" }}>
         <Card title="Staff Management" style={{ width: "60rem" }}>
           <ul>
-          {staffManagement.map((staff, index) => (
-            <li key={index}>
-            {staff.FirstName} {staff.LastName} -{" "}
-            {staffShowPasswords[index]
-              ? staff.Email
-              : "******"}{" "}
-            <Button
-              icon={<EyeOutlined />}
-              onClick={() => togglePasswordVisibility(index)}
-              style={{ marginLeft: "1rem", marginTop: "2%" }}
-            >
-              {staffShowPasswords[index] ? "Hide" : "Show"}
-            </Button>{" "}
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={() => {
-                setDeleteStaffIndex(index);
-                setDeleteConfirmationVisible(true);
-              }}
-              style={{ marginLeft: "1rem" }}
-            >
-              Delete Staff
-            </Button>
-          </li>
-          ))}
-
+            {staffManagement.map((staff, index) => (
+              <li key={index}>
+                {staff.FirstName} {staff.LastName} -{" "}
+                {staffShowPasswords[index] ? staff.Email : "******"}{" "}
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => togglePasswordVisibility(index)}
+                  style={{ marginLeft: "1rem", marginTop: "2%" }}
+                >
+                  {staffShowPasswords[index] ? "Hide" : "Show"}
+                </Button>{" "}
+                <Button
+                  icon={<DeleteOutlined />}
+                  onClick={() => {
+                    setDeleteStaffIndex(index);
+                    setDeleteConfirmationVisible(true);
+                  }}
+                  style={{ marginLeft: "1rem" }}
+                >
+                  Delete Staff
+                </Button>
+              </li>
+            ))}
           </ul>
         </Card>
       </div>

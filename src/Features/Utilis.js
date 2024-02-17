@@ -1,6 +1,7 @@
 import Axios from "axios";
-import { GetNewToken } from "../MainCode/Features/KitchenSlice";
+import { GetNewToken } from "./Kitchen/KitchenSlice";
 import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
+import { store } from "./Store/store";
 
 // const baseURL = "http://192.168.220.144:85";
 const baseURL = "http://10.10.64.21:85";
@@ -66,16 +67,16 @@ instance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    
     // Log detailed error response if available
     if (error?.response && error.response.status === 401) {
-        localStorage.removeItem("auth")
-        // const { userData } = useMenuContext();
-        // const token = await GetNewToken({ Email: userData, UserId: userData });
-        // localStorage.setItem("auth", JSON.stringify({ Accesstoken: token }));
-        // window.location.reload()
-        // console.log(checkAuths, "After")
-        return null
+      localStorage.removeItem("auth");
+      store.dispatch(GetNewToken({ Email: userData, UserId: userData }));
+      // const { userData } = useMenuContext();
+      // const token = await GetNewToken({ Email: userData, UserId: userData });
+      // localStorage.setItem("auth", JSON.stringify({ Accesstoken: token }));
+      // window.location.reload()
+      // console.log(checkAuths, "After")
+      return null;
     }
     return Promise.reject(error);
   }

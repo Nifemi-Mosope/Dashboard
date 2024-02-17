@@ -5,11 +5,11 @@ import {
   DislikeOutlined,
   HeartFilled,
   DislikeFilled,
-  SendOutlined
+  SendOutlined,
 } from "@ant-design/icons";
 import moment from "moment/moment";
-import profileUserImage from '../../../components/DashboardComponents/Think.jpeg';
-import { GetReviews } from "../../Features/KitchenSlice";
+import profileUserImage from "../../../components/DashboardComponents/Think.jpeg";
+import { GetReviews } from "../../../Features/Kitchen/KitchenSlice";
 import { useMenuContext } from "../Menus/MenuContext";
 
 function Reviews() {
@@ -19,7 +19,8 @@ function Reviews() {
   const [showInput, setShowInput] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [newCommentUserImage, setNewCommentUserImage] = useState(profileUserImage);
+  const [newCommentUserImage, setNewCommentUserImage] =
+    useState(profileUserImage);
   const [hasReviews, setHasReviews] = useState(false);
   const [loading, setLoading] = useState(true);
   const { userData, auth } = useMenuContext();
@@ -29,7 +30,7 @@ function Reviews() {
       try {
         if (userData.Id) {
           const response = await GetReviews(userData, auth);
-  
+
           if (Array.isArray(response.body) && response.body.length > 0) {
             setReviews(response.body);
             setHasReviews(true);
@@ -49,7 +50,7 @@ function Reviews() {
         setLoading(false);
       }
     };
-  
+
     fetchReviews();
   }, [userData.Id]);
 
@@ -57,7 +58,7 @@ function Reviews() {
     const date = new Date(timestamp);
     return `${date.toDateString()} ${date.toLocaleTimeString()}`;
   }
-  
+
   const handleLikeClick = (index) => {
     const updatedReviews = [...reviews];
     if (!likedReviews[index]) {
@@ -91,7 +92,7 @@ function Reviews() {
   };
 
   const handleSendClick = () => {
-    const timestamp = moment().format('MMMM Do YYYY, h:mm A');
+    const timestamp = moment().format("MMMM Do YYYY, h:mm A");
     const newReviewObj = {
       Reviewer: userData.KitchenName,
       Review: newComment,
@@ -100,85 +101,127 @@ function Reviews() {
       dislikeCount: 0,
       date: timestamp,
     };
-    
+
     const updatedReviews = [...reviews, newReviewObj];
-    
+
     setReviews(updatedReviews);
-    setNewComment('');
+    setNewComment("");
     setShowInput(false);
     setIsButtonDisabled(true);
     setHasReviews(true);
   };
-  
 
   const handleCommentInputChange = (e) => {
     const inputText = e.target.value;
     setNewComment(inputText);
-    setIsButtonDisabled(inputText === '');
+    setIsButtonDisabled(inputText === "");
   };
 
   return (
     <div className="reviews-container">
       {loading ? (
         // Loading component
-        <div style={{ fontFamily: 'sans-serif', fontSize: '1.2rem', textAlign: 'center', color: 'grey', marginLeft: '15rem', marginTop: '10rem' }}>
+        <div
+          style={{
+            fontFamily: "sans-serif",
+            fontSize: "1.2rem",
+            textAlign: "center",
+            color: "grey",
+            marginLeft: "15rem",
+            marginTop: "10rem",
+          }}
+        >
           Loading reviews...
         </div>
-      ) : (
-        hasReviews ? (
-          reviews.map((review, index) => (
-            <div key={index} className="review">
-              <div className="user-info">
-                <img src={newCommentUserImage} alt={`${review.Reviewer}'s avatar`} />
-                <div className="user-details">
-                  <span className="username">{review.Reviewer}</span>
-                  <span className="date">{moment(review.CreatedAt).format('dddd, MMMM Do YYYY, h:mm:ss a')}</span>
-                </div>
-              </div>
-              <p className="review-content">{review.Review}</p>
-              <div className="review-actions">
-                <span className={`like-count ${likedReviews[index] ? "active" : ""}`}>
-                  {likedReviews[index] ? (
-                    <>
-                      <HeartFilled
-                        style={{ color: "#c45628" }}
-                        onClick={() => handleLikeClick(index)}
-                      />
-                      <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.AgreeCount}</span>
-                    </>
-                  ) : (
-                    <>
-                      <HeartOutlined onClick={() => handleLikeClick(index)} />
-                      <span style={{ fontFamily: 'sans-serif' }}>{review.AgreeCount}</span>
-                    </>
-                  )}
-                </span>
-                <span className={`dislike-count ${dislikedReviews[index] ? "active" : ""}`}>
-                  {dislikedReviews[index] ? (
-                    <>
-                      <DislikeFilled
-                        style={{ color: "#c45628" }}
-                        onClick={() => handleDislikeClick(index)}
-                      />
-                      <span style={{ color: "#c45628", fontFamily: 'sans-serif' }}>{review.DisagreeCount}</span>
-                    </>
-                  ) : (
-                    <>
-                      <DislikeOutlined onClick={(() => handleDislikeClick(index))} />
-                      <span style={{ fontFamily: 'sans-serif' }}>{review.DisagreeCount}</span>
-                    </>
+      ) : hasReviews ? (
+        reviews.map((review, index) => (
+          <div key={index} className="review">
+            <div className="user-info">
+              <img
+                src={newCommentUserImage}
+                alt={`${review.Reviewer}'s avatar`}
+              />
+              <div className="user-details">
+                <span className="username">{review.Reviewer}</span>
+                <span className="date">
+                  {moment(review.CreatedAt).format(
+                    "dddd, MMMM Do YYYY, h:mm:ss a"
                   )}
                 </span>
               </div>
             </div>
-          ))          
-        ) : (
-          <div style={{fontFamily: 'sans-serif', fontSize: '1.2rem', textAlign: 'center', color: 'grey', marginLeft: '15rem', marginTop: '10rem'}}>
-            No Reviews yet, Wait for your customers to say something about you
+            <p className="review-content">{review.Review}</p>
+            <div className="review-actions">
+              <span
+                className={`like-count ${likedReviews[index] ? "active" : ""}`}
+              >
+                {likedReviews[index] ? (
+                  <>
+                    <HeartFilled
+                      style={{ color: "#c45628" }}
+                      onClick={() => handleLikeClick(index)}
+                    />
+                    <span
+                      style={{ color: "#c45628", fontFamily: "sans-serif" }}
+                    >
+                      {review.AgreeCount}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <HeartOutlined onClick={() => handleLikeClick(index)} />
+                    <span style={{ fontFamily: "sans-serif" }}>
+                      {review.AgreeCount}
+                    </span>
+                  </>
+                )}
+              </span>
+              <span
+                className={`dislike-count ${
+                  dislikedReviews[index] ? "active" : ""
+                }`}
+              >
+                {dislikedReviews[index] ? (
+                  <>
+                    <DislikeFilled
+                      style={{ color: "#c45628" }}
+                      onClick={() => handleDislikeClick(index)}
+                    />
+                    <span
+                      style={{ color: "#c45628", fontFamily: "sans-serif" }}
+                    >
+                      {review.DisagreeCount}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <DislikeOutlined
+                      onClick={() => handleDislikeClick(index)}
+                    />
+                    <span style={{ fontFamily: "sans-serif" }}>
+                      {review.DisagreeCount}
+                    </span>
+                  </>
+                )}
+              </span>
+            </div>
           </div>
-        )
+        ))
+      ) : (
+        <div
+          style={{
+            fontFamily: "sans-serif",
+            fontSize: "1.2rem",
+            textAlign: "center",
+            color: "grey",
+            marginLeft: "15rem",
+            marginTop: "10rem",
+          }}
+        >
+          No Reviews yet, Wait for your customers to say something about you
+        </div>
       )}
-{/* 
+      {/* 
       {showInput ? (
         <div className="add-comment active">
           <div className="comment-input">
