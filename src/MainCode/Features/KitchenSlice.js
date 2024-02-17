@@ -1,5 +1,6 @@
-import {axios, axiosWithAuth} from '../Features/Utilis'
-import instance from '../Features/Utilis'
+import {axios, axiosWithAuth} from '../../Features/Utilis'
+import { useMenuContext } from '../SideBarLinkPage/Menus/MenuContext'
+import instance from '../../Features/Utilis'
 
 const BASE_PATH = "/Kitchen"
 export async function SignUp(data){
@@ -313,5 +314,19 @@ export async function GetStaff(data, auth) {
         return response.data
     } catch (error) {
         return error?.response?.data;
+    }
+}
+
+export async function GetNewToken(data, refreshToken){
+    try {
+        const path = BASE_PATH + `/GetNewAccessToken?Email=${data.KitchenEmail}&&UserId=${data.Id}`;
+        const response = await axiosWithAuth(refreshToken).get(path);
+        if(response.data.body){
+            localStorage.setItem("auth", JSON.stringify({ accesstoken: response.data.body.AccessToken }));
+        }
+        // return response.data;
+    } catch (error) {
+        console.log(error?.response?.data)
+        return error?.response?.data
     }
 }

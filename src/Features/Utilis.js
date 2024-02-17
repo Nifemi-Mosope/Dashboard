@@ -1,7 +1,9 @@
 import Axios from "axios";
+import { GetNewToken } from "../MainCode/Features/KitchenSlice";
+import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
 
-const baseURL = "http://192.168.220.144:85";
-// const baseURL = "http://10.4.87.116:85";
+// const baseURL = "http://192.168.220.144:85";
+const baseURL = "http://10.10.64.21:85";
 
 // Function to retrieve the authorization token
 const getToken = () => {
@@ -17,6 +19,20 @@ const getToken = () => {
     throw error; // Propagate the error
   }
 };
+
+// const getRefreshToken = () => {
+//   try {
+//     const token = localStorage.getItem("auth");
+//     if (token) {
+//       const { refreshtoken } = JSON.parse(token);
+//       return refreshtoken;
+//     }
+//     return null;
+//   } catch (error) {
+//     // console.error("Error retrieving token:", error);
+//     throw error; // Propagate the error
+//   }
+// };
 
 export const axios = Axios.create({ baseURL });
 
@@ -52,11 +68,12 @@ instance.interceptors.response.use(
   async (error) => {
     
     // Log detailed error response if available
-    if (error?.response && error.response.status === 403) {
-        // console.error("ErrorNew:", error.response.status);
-        // console.log(checkAuth, "Before")
+    if (error?.response && error.response.status === 401) {
         localStorage.removeItem("auth")
-        window.location.reload()
+        // const { userData } = useMenuContext();
+        // const token = await GetNewToken({ Email: userData, UserId: userData });
+        // localStorage.setItem("auth", JSON.stringify({ Accesstoken: token }));
+        // window.location.reload()
         // console.log(checkAuths, "After")
         return null
     }

@@ -29,12 +29,16 @@ export function MenuProvider({ children }) {
   const storedOrders = localStorage.getItem('fetchedOrders');
   const initialOrders = storedOrders ? JSON.parse(storedOrders) : null;
 
+  const storedRefreshToken = localStorage.getItem('refreshtoken');
+  const initialRefreshToken = storedRefreshToken ? JSON.parse(storedRefreshToken) : null;
+
   const [userData, setUserData] = useState(initialUserData);
   const [auth, setAuth] = useState(initialAuth);
   const [menus, setMenus] = useState(initialMenus);
   const [staffs, setStaffs] = useState(initialStaff); 
   const [image, setImage] = useState(initialImage);
   const [fetchedOrders, setFetchedOrders] = useState(initialOrders);
+  const [refreshToken, setRefreshToken] = useState(initialRefreshToken);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -64,6 +68,7 @@ export function MenuProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('userData');
     localStorage.removeItem('auth');
+    localStorage.removeItem('refreshtoken');
     localStorage.removeItem('menus');
     localStorage.removeItem('staffs');
     localStorage.removeItem('Image');
@@ -78,7 +83,7 @@ export function MenuProvider({ children }) {
   }
 
   return (
-    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, currentOrders, removeOrderAndAddToHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage, fetchedOrders, setFetchedOrders, updateOrderHistory, addToOrderHistory, logout }}>
+    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, currentOrders, removeOrderAndAddToHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage, fetchedOrders, setFetchedOrders, updateOrderHistory, addToOrderHistory, logout, refreshToken, setRefreshToken }}>
       {children}
     </MenuContext.Provider>
   );

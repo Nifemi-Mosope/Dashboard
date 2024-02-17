@@ -20,7 +20,7 @@ function SignIn() {
   };
 
   const navigate = useNavigate();
-  const { setUser, setAuth } = useMenuContext();
+  const { setUser, setAuth, setRefreshToken } = useMenuContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +40,7 @@ function SignIn() {
         });
         setUser(response.body);
         setAuth(response.extrainfo)
+        setRefreshToken(response?.extrainfo?.refreshtoken);
         // console.log(response.body);
         navigate('/home');
       } else if(response.message === "Incorrect Password") {
